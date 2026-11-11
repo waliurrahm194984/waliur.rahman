@@ -1,1 +1,48 @@
-{"captains":{"captain":{"fb":"#","img":"https://via.placeholder.com/100","name":"Waliur Rahman","phone":"01XXXXXXXXX","wa":"#"},"viceCaptain":{"fb":"#","img":"https://via.placeholder.com/100","name":"Vice Captain","phone":"01XXXXXXXXX","wa":"#"}},"exams":[{"date":"2026-11-20","examNotice":"Math exam somporke: Chapter 3 valo kore pore asba.","id":1,"subject":"Math"}],"notices":[{"id":1,"text":"Final semester routine is out."}],"polls":[{"id":1,"options":[{"name":"Chapter 1","votes":0},{"name":"Chapter 2","votes":0}],"topic":"Next Class Test Topic?"}]}
+{
+  "notices": [
+    {
+      "id": 1,
+      "text": "Final semester routine is out."
+    }
+  ],
+  "exams": [
+    {
+      "id": 1,
+      "subject": "Math",
+      "date": "2026-11-20",
+      "examNotice": "Math exam somporke: Chapter 3 valo kore pore asba."
+    }
+  ],
+  "polls": [
+    {
+      "id": 1,
+      "topic": "Next Class Test Topic?",
+      "options": [
+        {
+          "name": "Chapter 1",
+          "votes": 0
+        },
+        {
+          "name": "Chapter 2",
+          "votes": 0
+        }
+      ]
+    }
+  ],
+  "captains": {
+    "captain": {
+      "name": "Waliur Rahman",
+      "phone": "01XXXXXXXXX",
+      "fb": "#",
+      "wa": "#",
+      "img": "https://via.placeholder.com/100"
+    },
+    "viceCaptain": {
+      "name": "Vice Captain",
+      "phone": "01XXXXXXXXX",
+      "fb": "#",
+      "wa": "#",
+      "img": "https://via.placeholder.com/100"
+    }
+  }
+}
