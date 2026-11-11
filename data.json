@@ -1,6 +1,10 @@
 {
   "notices": [
     {
+      "id": 1794419815812,
+      "text": "Sobai Bangla  book niya aiso"
+    },
+    {
       "id": 1794418492590,
       "text": "Kal exam"
     }
@@ -17,24 +21,21 @@
       "subject": "English",
       "date": "2026-11-12",
       "examNotice": "Oky"
-    }
-  ],
-  "polls": [
+    },
     {
-      "id": 1794418922233,
-      "topic": "Kal ki class korba?",
-      "options": [
-        {
-          "name": "Ha",
-          "votes": 0
-        },
-        {
-          "name": "Na",
-          "votes": 0
-        }
-      ]
+      "id": 1794419841848,
+      "subject": "Ict",
+      "date": "2026-11-11",
+      "examNotice": "Sokal e exam ase"
+    },
+    {
+      "id": 1794419889810,
+      "subject": "BGS",
+      "date": "2026-11-10",
+      "examNotice": ""
     }
   ],
+  "polls": [],
   "captains": {
     "captain": {
       "name": "Waliur Rahman",
