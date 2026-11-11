@@ -167,6 +167,11 @@ textarea.admin-input{ resize:vertical; }
 .admin-item-text{ margin:0; font-size:15px; line-height:1.6; color:#1e293b; }
 .admin-item-sub{ margin:2px 0 0; font-size:14px; color:#475569; }
 .tiny-note{ font-size:12px; color:var(--muted); margin:8px 0 0; }
+.preview-publish{ margin-top:16px; background:#fffbeb; border:1px solid #fcd34d; border-radius:14px; padding:14px 16px; box-shadow:0 8px 18px -10px rgba(217,119,6,.25), inset 0 1px 0 #fff; }
+.preview-publish p{ margin:0; font-size:14.5px; line-height:1.65; color:#92400e; font-weight:600; }
+.preview-publish ul{ margin:10px 0 0; padding-left:18px; font-size:14px; line-height:1.6; color:#78350f; }
+.preview-publish .btn-row{ margin-top:12px; align-items:center; }
+.preview-copy-status{ font-size:13px; font-weight:700; color:#16a34a; }
 #error-banner{ display:none; max-width:56rem; margin:0 auto 16px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:14px; padding:14px 16px; font-size:14px; font-weight:600; box-shadow:0 10px 22px -12px rgba(153,27,27,.3); }
 #error-banner.show{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
 #error-banner button{ background:var(--red); color:#fff; border:0; padding:8px 14px; border-radius:10px; font-weight:700; flex-shrink:0; }
@@ -308,23 +313,12 @@ function sha256Hex(text){
   return Promise.resolve(sha256Fallback(text));
 }
 
-/* ---------- Safe storage: broken or blocked storage must never break the page ---------- */
-var memoryStore = {};
-function loadStored(key, fallback){
-  try {
-    var raw = localStorage.getItem(key);
-    if (raw){
-      var parsed = JSON.parse(raw);
-      if (parsed !== null && typeof parsed !== "undefined") return parsed;
-    }
-  } catch (e) { /* storage blocked / corrupt JSON — fall through */ }
-  if (Object.prototype.hasOwnProperty.call(memoryStore, key)) return memoryStore[key];
-  return fallback;
-}
-function saveStored(key, value){
-  memoryStore[key] = value;
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* keep in-memory copy only */ }
-}
+/* ---------- Single source of truth: board data comes ONLY from the data
+   embedded in this page (the DEFAULT_* values below). Nothing is read from
+   or written to browser storage, so every visitor who loads this page sees
+   exactly the same board and no device can drift to different data.
+   Admin edits are an in-memory preview on this device only (see the
+   preview-publish note in the Admin panel). ---------- */
 
 /* ---------- Input hardening: lengths, plain text, safe links ---------- */
 var LIMITS = { notice: 2000, subject: 120, examNotice: 1000, topic: 200, option: 120, name: 80, phone: 40, url: 500 };
@@ -521,10 +515,12 @@ var state = {
   loginMessage: "",
   loginOk: false,
   openExams: {},
-  notices: normalizeNotices(loadStored("cnb_notices", null)) || DEFAULT_NOTICES.slice(),
-  exams: normalizeExams(loadStored("cnb_exams", null)) || DEFAULT_EXAMS.slice(),
-  polls: normalizePolls(loadStored("cnb_polls", null)) || DEFAULT_POLLS.slice(),
-  captains: normalizeCaptains(loadStored("cnb_captains", null), DEFAULT_CAPTAINS) || JSON.parse(JSON.stringify(DEFAULT_CAPTAINS)),
+  notices: JSON.parse(JSON.stringify(DEFAULT_NOTICES)),
+  exams: JSON.parse(JSON.stringify(DEFAULT_EXAMS)),
+  polls: JSON.parse(JSON.stringify(DEFAULT_POLLS)),
+  captains: JSON.parse(JSON.stringify(DEFAULT_CAPTAINS)),
+  previewChanges: [],
+  previewCopyStatus: "", 
   editingNoticeId: null,
   editingExamId: null,
   pollMessage: ""
@@ -547,6 +543,71 @@ function verifyAdminPassword(pw){
     h = sha256Fallback(h + ":" + ADMIN_VERIFIER.salt);
   }
   return h;
+}
+
+/* ---------- Admin preview changes: in-memory only, never saved anywhere.
+   Each Admin save records a short line here so the panel can show the
+   Bangla preview note and a one-tap Copy message for Muse to publish. ---------- */
+function recordChange(text){
+  if (!text) return;
+  state.previewChanges.push(text);
+  state.previewCopyStatus = "";
+}
+function recordCaptainChange(role, fieldLabel, prefix, value){
+  var label = (role === "captain" ? "Captain" : "Vice Captain") + " " + fieldLabel + ": ";
+  state.previewChanges = state.previewChanges.filter(function(t){ return t.indexOf(prefix) !== 0; });
+  state.previewChanges.push(label + (value ? value : "(খালি)"));
+  state.previewCopyStatus = "";
+}
+function buildPublishMessage(){
+  var lines = ["Class Notice Board update publish koro:"];
+  state.previewChanges.forEach(function(t, i){ lines.push((i + 1) + ". " + t); });
+  return lines.join("\n");
+}
+function copyPublishMessage(){
+  var msg = buildPublishMessage();
+  function done(){
+    state.previewCopyStatus = "Copied! এখন মেসেজটি Muse-কে পাঠান।";
+    render();
+  }
+  function fallbackCopy(){
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = msg;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      if (ok) done();
+      else { state.previewCopyStatus = "Copy হয়নি — আবার চেষ্টা করুন।"; render(); }
+    } catch (e) {
+      state.previewCopyStatus = "Copy হয়নি — আবার চেষ্টা করুন।";
+      render();
+    }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(msg).then(done).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+}
+function renderPreviewPublish(){
+  if (!state.previewChanges || state.previewChanges.length === 0) return null;
+  var box = el("div", "preview-publish");
+  box.setAttribute("role", "status");
+  box.appendChild(el("p", null, "এই পরিবর্তনটি শুধু এই ফোনে প্রিভিউ হিসেবে দেখাচ্ছে — অন্যরা এখনো আগের তথ্যই দেখবে। সবার জন্য প্রকাশ করতে নিচের Copy বাটনে চাপ দিয়ে মেসেজটি Muse-কে পাঠান, Muse প্রকাশ করে দিলে তবেই সবাই নতুন তথ্য দেখবে।"));
+  var list = el("ul");
+  state.previewChanges.forEach(function(t){ list.appendChild(el("li", "wrap-text", t)); });
+  box.appendChild(list);
+  var row = el("div", "btn-row");
+  row.appendChild(btn("Copy", "btn btn-primary btn-sm", copyPublishMessage));
+  if (state.previewCopyStatus) row.appendChild(el("span", "preview-copy-status", state.previewCopyStatus));
+  box.appendChild(row);
+  return box;
 }
 
 /* Admin hardening: brute-force lockout + automatic logout.
@@ -845,7 +906,6 @@ function renderVoting(){
       b.appendChild(el("span", "count", opt.votes + " Votes"));
       b.addEventListener("click", function(){
         poll.options[i].votes++;
-        saveStored("cnb_polls", state.polls);
         render();
       });
       opts.appendChild(b);
@@ -856,12 +916,13 @@ function renderVoting(){
       row.style.marginTop = "12px";
       row.appendChild(btn("Reset Votes", "btn btn-amber btn-sm", function(){
         poll.options.forEach(function(o){ o.votes = 0; });
-        saveStored("cnb_polls", state.polls);
+        recordChange("Vote-এর ভোট রিসেট করা হয়েছে: \"" + poll.topic + "\"");
         render();
       }));
       row.appendChild(btn("Delete Vote", "btn btn-logout btn-sm", function(){
+        var topic = poll.topic;
         state.polls = state.polls.filter(function(p){ return p.id !== poll.id; });
-        saveStored("cnb_polls", state.polls);
+        recordChange("Vote মুছে ফেলা হয়েছে: \"" + topic + "\"");
         render();
       }));
       card.appendChild(row);
@@ -963,7 +1024,9 @@ function renderAdminPanel(){
   h2.appendChild(sh);
   h2.appendChild(document.createTextNode("Admin Panel"));
   panel.appendChild(h2);
-  panel.appendChild(el("p", "admin-note", "Changes save automatically in this browser and show on the board right away."));
+  panel.appendChild(el("p", "admin-note", "এখানে যা বদলাবেন তা শুধু এই ফোনে প্রিভিউ হিসেবে দেখাবে — সবার ফোনে প্রকাশ হবে না। পরিবর্তন সবার জন্য প্রকাশ করতে, বদলানোর পর নিচে আসা Copy বাটন দিয়ে মেসেজটি Muse-কে পাঠান।"));
+  var previewBox = renderPreviewPublish();
+  if (previewBox) panel.appendChild(previewBox);
   panel.appendChild(adminCaptainsSection());
   panel.appendChild(adminNoticesSection());
   panel.appendChild(adminExamsSection());
@@ -1001,12 +1064,10 @@ function adminCaptainsSection(){
     ["name", "img", "phone", "fb", "wa"].forEach(function(f){
       refs[f].addEventListener("input", function(){
         var v = cleanText(refs[f].value, f === "name" ? LIMITS.name : f === "phone" ? LIMITS.phone : LIMITS.url);
-        if (f === "fb" || f === "wa" || f === "img"){
-          state.captains[role][f] = v;
-        } else {
-          state.captains[role][f] = v;
-        }
-        saveStored("cnb_captains", state.captains);
+        state.captains[role][f] = v;
+        var labels = { name: "Name", img: "Photo URL", phone: "Phone", fb: "Facebook Link", wa: "WhatsApp Link" };
+        var prefix = (role === "captain" ? "Captain" : "Vice Captain") + " " + labels[f] + ": ";
+        recordCaptainChange(role, labels[f], prefix, v);
         scheduleBoardRefresh();
       });
     });
@@ -1047,7 +1108,7 @@ function adminNoticesSection(){
     var text = cleanText(formRefs.newNotice ? formRefs.newNotice.value : "", LIMITS.notice).trim();
     if (!text) return;
     state.notices.unshift({ id: Date.now(), text: text });
-    saveStored("cnb_notices", state.notices);
+    recordChange("Notice যোগ করা হয়েছে: \"" + text + "\"");
     render();
   }));
   sec.appendChild(add);
@@ -1065,7 +1126,7 @@ function adminNoticesSection(){
         if (!text) return;
         notice.text = text;
         state.editingNoticeId = null;
-        saveStored("cnb_notices", state.notices);
+        recordChange("Notice বদলানো হয়েছে: \"" + text + "\"");
         render();
       }));
       row.appendChild(btn("Cancel", "btn btn-ghost btn-sm", function(){ state.editingNoticeId = null; render(); }));
@@ -1079,8 +1140,9 @@ function adminNoticesSection(){
       var acts = el("div", "btn-row");
       acts.appendChild(btn("Edit", "btn btn-primary btn-sm", function(){ state.editingNoticeId = notice.id; render(); }));
       acts.appendChild(btn("Delete", "btn btn-logout btn-sm", function(){
+        var deletedText = notice.text;
         state.notices = state.notices.filter(function(n){ return n.id !== notice.id; });
-        saveStored("cnb_notices", state.notices);
+        recordChange("Notice মুছে ফেলা হয়েছে: \"" + deletedText + "\"");
         render();
       }));
       rowB.appendChild(acts);
@@ -1111,13 +1173,15 @@ function adminExamsSection(){
     var r = formRefs.newExam;
     var subject = cleanText(r.subject.value, LIMITS.subject).trim();
     if (!subject) return;
+    var newExamNotice = cleanText(r.examNotice.value, LIMITS.examNotice).trim();
+    var newExamDate = validDateStr(r.date.value);
     state.exams.push({
       id: Date.now(),
       subject: subject,
-      date: validDateStr(r.date.value),
-      examNotice: cleanText(r.examNotice.value, LIMITS.examNotice).trim()
+      date: newExamDate,
+      examNotice: newExamNotice
     });
-    saveStored("cnb_exams", state.exams);
+    recordChange("Exam যোগ করা হয়েছে: " + subject + (newExamDate ? " — " + newExamDate : "") + (newExamNotice ? " — \"" + newExamNotice + "\"" : ""));
     render();
   }));
   sec.appendChild(add);
@@ -1143,7 +1207,7 @@ function adminExamsSection(){
         exam.date = validDateStr(r.date.value);
         exam.examNotice = cleanText(r.examNotice.value, LIMITS.examNotice);
         state.editingExamId = null;
-        saveStored("cnb_exams", state.exams);
+        recordChange("Exam বদলানো হয়েছে: " + exam.subject + (exam.date ? " — " + exam.date : "") + (exam.examNotice ? " — \"" + exam.examNotice + "\"" : ""));
         render();
       }));
       row.appendChild(btn("Cancel", "btn btn-ghost btn-sm", function(){ state.editingExamId = null; render(); }));
@@ -1163,8 +1227,9 @@ function adminExamsSection(){
       var acts = el("div", "btn-row");
       acts.appendChild(btn("Edit", "btn btn-primary btn-sm", function(){ state.editingExamId = exam.id; render(); }));
       acts.appendChild(btn("Delete", "btn btn-logout btn-sm", function(){
+        var deletedExam = exam.subject + (exam.date ? " — " + exam.date : "");
         state.exams = state.exams.filter(function(x){ return x.id !== exam.id; });
-        saveStored("cnb_exams", state.exams);
+        recordChange("Exam মুছে ফেলা হয়েছে: " + deletedExam);
         render();
       }));
       rowB.appendChild(acts);
@@ -1207,7 +1272,7 @@ function adminVotingSection(){
     }
     state.polls.push({ id: Date.now(), topic: topic, options: [{ name: o1, votes: 0 }, { name: o2, votes: 0 }] });
     state.pollMessage = "";
-    saveStored("cnb_polls", state.polls);
+    recordChange("Vote তৈরি করা হয়েছে: \"" + topic + "\" — Option 1: \"" + o1 + "\", Option 2: \"" + o2 + "\"");
     render();
   }));
   card.appendChild(el("p", "tiny-note", "Delete or reset votes from the Live Voting section below while you are logged in."));
