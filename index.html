@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'none'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="description" content="Class Notice Board — Department of Mechanical">
 <title>Class Notice Board</title>
@@ -167,11 +167,11 @@ textarea.admin-input{ resize:vertical; }
 .admin-item-text{ margin:0; font-size:15px; line-height:1.6; color:#1e293b; }
 .admin-item-sub{ margin:2px 0 0; font-size:14px; color:#475569; }
 .tiny-note{ font-size:12px; color:var(--muted); margin:8px 0 0; }
-.preview-publish{ margin-top:16px; background:#fffbeb; border:1px solid #fcd34d; border-radius:14px; padding:14px 16px; box-shadow:0 8px 18px -10px rgba(217,119,6,.25), inset 0 1px 0 #fff; }
-.preview-publish p{ margin:0; font-size:14.5px; line-height:1.65; color:#92400e; font-weight:600; }
-.preview-publish ul{ margin:10px 0 0; padding-left:18px; font-size:14px; line-height:1.6; color:#78350f; }
-.preview-publish .btn-row{ margin-top:12px; align-items:center; }
-.preview-copy-status{ font-size:13px; font-weight:700; color:#16a34a; }
+.publish-box{ margin-top:16px; background:#f0fdf4; border:1px solid #86efac; border-radius:14px; padding:14px 16px; box-shadow:0 8px 18px -10px rgba(22,163,74,.25), inset 0 1px 0 #fff; }
+.publish-box p{ margin:0; font-size:14.5px; line-height:1.65; color:#14532d; font-weight:600; }
+.publish-box .field{ margin-top:12px; }
+.publish-box .btn-row{ margin-top:14px; align-items:center; }
+.publish-status{ font-size:14px; font-weight:700; }
 #error-banner{ display:none; max-width:56rem; margin:0 auto 16px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:14px; padding:14px 16px; font-size:14px; font-weight:600; box-shadow:0 10px 22px -12px rgba(153,27,27,.3); }
 #error-banner.show{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
 #error-banner button{ background:var(--red); color:#fff; border:0; padding:8px 14px; border-radius:10px; font-weight:700; flex-shrink:0; }
@@ -313,12 +313,14 @@ function sha256Hex(text){
   return Promise.resolve(sha256Fallback(text));
 }
 
-/* ---------- Single source of truth: board data comes ONLY from the data
-   embedded in this page (the DEFAULT_* values below). Nothing is read from
-   or written to browser storage, so every visitor who loads this page sees
-   exactly the same board and no device can drift to different data.
-   Admin edits are an in-memory preview on this device only (see the
-   preview-publish note in the Admin panel). ---------- */
+/* ---------- Board data: the page fetches data.json fresh on every visit
+   (with a cache-buster, so nobody sees a stale copy). If that fetch fails —
+   offline, file missing — the embedded DEFAULT_* data below is shown
+   instead, so the board is never blank. The owner publishes updates from
+   the Admin panel: Publish writes the current data to data.json in the
+   board's GitHub repo, and every visitor then loads that same file.
+   Board data itself is never kept in browser storage; the only thing kept
+   there is the owner's GitHub token, on his phone only (see below). ------ */
 
 /* ---------- Input hardening: lengths, plain text, safe links ---------- */
 var LIMITS = { notice: 2000, subject: 120, examNotice: 1000, topic: 200, option: 120, name: 80, phone: 40, url: 500 };
@@ -519,8 +521,10 @@ var state = {
   exams: JSON.parse(JSON.stringify(DEFAULT_EXAMS)),
   polls: JSON.parse(JSON.stringify(DEFAULT_POLLS)),
   captains: JSON.parse(JSON.stringify(DEFAULT_CAPTAINS)),
-  previewChanges: [],
-  previewCopyStatus: "", 
+  ghToken: "",
+  publishing: false,
+  publishOk: false,
+  publishStatus: "",
   editingNoticeId: null,
   editingExamId: null,
   pollMessage: ""
@@ -545,69 +549,148 @@ function verifyAdminPassword(pw){
   return h;
 }
 
-/* ---------- Admin preview changes: in-memory only, never saved anywhere.
-   Each Admin save records a short line here so the panel can show the
-   Bangla preview note and a one-tap Copy message for Muse to publish. ---------- */
-function recordChange(text){
-  if (!text) return;
-  state.previewChanges.push(text);
-  state.previewCopyStatus = "";
+/* ---------- Board data loading: fetch data.json fresh on every visit.
+   The embedded DEFAULT_* values stay as the fallback if the fetch fails. -- */
+function applyBoardData(data){
+  if (!data || typeof data !== "object") return false;
+  var applied = false;
+  var n = normalizeNotices(data.notices);
+  if (n){ state.notices = n; applied = true; }
+  var e = normalizeExams(data.exams);
+  if (e){ state.exams = e; applied = true; }
+  var p = normalizePolls(data.polls);
+  if (p){ state.polls = p; applied = true; }
+  var c = normalizeCaptains(data.captains, DEFAULT_CAPTAINS);
+  if (c){ state.captains = c; applied = true; }
+  return applied;
 }
-function recordCaptainChange(role, fieldLabel, prefix, value){
-  var label = (role === "captain" ? "Captain" : "Vice Captain") + " " + fieldLabel + ": ";
-  state.previewChanges = state.previewChanges.filter(function(t){ return t.indexOf(prefix) !== 0; });
-  state.previewChanges.push(label + (value ? value : "(খালি)"));
-  state.previewCopyStatus = "";
+function fetchJsonFresh(url){
+  return fetch(url, { cache: "no-store" }).then(function(res){
+    if (!res.ok) throw new Error("http " + res.status);
+    return res.json();
+  });
 }
-function buildPublishMessage(){
-  var lines = ["Class Notice Board update publish koro:"];
-  state.previewChanges.forEach(function(t, i){ lines.push((i + 1) + ". " + t); });
-  return lines.join("\n");
+function loadBoardData(){
+  var bust = "?_=" + Date.now();
+  fetchJsonFresh("data.json" + bust).catch(function(){
+    return fetchJsonFresh("assets/data.json" + bust);
+  }).then(function(data){
+    if (state.isAdmin) return; /* never clobber edits being made in the panel */
+    if (applyBoardData(data)) render();
+  }).catch(function(){ /* fetch failed — the embedded fallback data stays */ });
 }
-function copyPublishMessage(){
-  var msg = buildPublishMessage();
-  function done(){
-    state.previewCopyStatus = "Copied! এখন মেসেজটি Muse-কে পাঠান।";
+
+/* ---------- GitHub publish: the owner publishes updates himself.
+   The token is kept ONLY in this phone's own browser storage — never in
+   this page, never in the repo. Board data is never kept in browser
+   storage. Publishing writes the current board data (including Admin
+   edits) to data.json in the board's repo via the GitHub Contents API. -- */
+var GH_REPO = "waliurrahm194984/waliur.rahman";
+var GH_TOKEN_KEY = "cnb_github_token";
+function getGhToken(){
+  try {
+    var saved = window.localStorage.getItem(GH_TOKEN_KEY);
+    if (saved) return saved;
+  } catch (e) {}
+  return state.ghToken || "";
+}
+function saveGhToken(value){
+  state.ghToken = value;
+  try { window.localStorage.setItem(GH_TOKEN_KEY, value); } catch (e) {}
+}
+function boardDataObject(){
+  return {
+    notices: state.notices,
+    exams: state.exams,
+    polls: state.polls,
+    captains: state.captains
+  };
+}
+function utf8ToBase64(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function publishToGitHub(){
+  if (state.publishing) return;
+  var token = (getGhToken() || "").trim();
+  if (!token){
+    state.publishOk = false;
+    state.publishStatus = "আগে নিচের ঘরে GitHub Token টি বসান।";
+    render();
+    return;
+  }
+  state.publishing = true;
+  state.publishOk = true;
+  state.publishStatus = "Publishing… একটু অপেক্ষা করুন।";
+  render();
+  var apiUrl = "https://api.github.com/repos/" + GH_REPO + "/contents/data.json";
+  var headers = {
+    "Authorization": "Bearer " + token,
+    "Accept": "application/vnd.github+json",
+    "Content-Type": "application/json"
+  };
+  function fail(msg){
+    state.publishing = false;
+    state.publishOk = false;
+    state.publishStatus = msg;
     render();
   }
-  function fallbackCopy(){
-    try {
-      var ta = document.createElement("textarea");
-      ta.value = msg;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      var ok = false;
-      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-      document.body.removeChild(ta);
-      if (ok) done();
-      else { state.previewCopyStatus = "Copy হয়নি — আবার চেষ্টা করুন।"; render(); }
-    } catch (e) {
-      state.previewCopyStatus = "Copy হয়নি — আবার চেষ্টা করুন।";
-      render();
+  fetch(apiUrl + "?ref=main", { headers: headers }).then(function(res){
+    if (res.status === 404) return null; /* data.json not in the repo yet — it will be created */
+    if (res.status === 401 || res.status === 403){ var authErr = new Error("auth"); throw authErr; }
+    if (!res.ok) throw new Error("http");
+    return res.json();
+  }).then(function(current){
+    var body = {
+      message: "Board update from Admin panel",
+      content: utf8ToBase64(JSON.stringify(boardDataObject(), null, 2)),
+      branch: "main"
+    };
+    if (current && current.sha) body.sha = current.sha;
+    return fetch(apiUrl, { method: "PUT", headers: headers, body: JSON.stringify(body) });
+  }).then(function(res){
+    if (res.status === 401 || res.status === 403) throw new Error("auth");
+    if (!res.ok) throw new Error("http");
+    state.publishing = false;
+    state.publishOk = true;
+    state.publishStatus = "Published! Sobai 1 minute er moddhe notun ta dekhbe.";
+    render();
+  }).catch(function(err){
+    if (err && err.message === "auth"){
+      fail("Token টি ঠিক নয়, অথবা এই repo-তে লেখার অনুমতি নেই। Token টি আবার চেক করুন।");
+    } else {
+      fail("Publish হয়নি — ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।");
     }
-  }
-  if (navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(msg).then(done).catch(fallbackCopy);
-  } else {
-    fallbackCopy();
-  }
+  });
 }
-function renderPreviewPublish(){
-  if (!state.previewChanges || state.previewChanges.length === 0) return null;
-  var box = el("div", "preview-publish");
-  box.setAttribute("role", "status");
-  box.appendChild(el("p", null, "এই পরিবর্তনটি শুধু এই ফোনে প্রিভিউ হিসেবে দেখাচ্ছে — অন্যরা এখনো আগের তথ্যই দেখবে। সবার জন্য প্রকাশ করতে নিচের Copy বাটনে চাপ দিয়ে মেসেজটি Muse-কে পাঠান, Muse প্রকাশ করে দিলে তবেই সবাই নতুন তথ্য দেখবে।"));
-  var list = el("ul");
-  state.previewChanges.forEach(function(t){ list.appendChild(el("li", "wrap-text", t)); });
-  box.appendChild(list);
+function renderPublishSection(){
+  var sec = adminSection(ICONS.shield, "Publish");
+  var box = el("div", "publish-box");
+  box.appendChild(el("p", null, "GitHub Token টি শুধু এই ফোনের ব্রাউজারেই থাকবে — পেজে বা GitHub-এ যাবে না। এই token দিয়ে শুধু এই বোর্ডের repo-তেই আপডেট করা যাবে। Token একবার বসালেই হবে, প্রতিবার লাগবে না।"));
+  var tokenInput = document.createElement("input");
+  uidCounter++;
+  tokenInput.type = "password";
+  tokenInput.className = "admin-input";
+  tokenInput.id = "f" + uidCounter;
+  tokenInput.placeholder = "GitHub Token এখানে বসান";
+  tokenInput.maxLength = 300;
+  tokenInput.setAttribute("autocomplete", "off");
+  tokenInput.value = getGhToken();
+  formRefs.ghToken = tokenInput;
+  tokenInput.addEventListener("input", function(){ saveGhToken(tokenInput.value); });
+  box.appendChild(field("GitHub Token (একবারই বসাতে হবে)", tokenInput));
   var row = el("div", "btn-row");
-  row.appendChild(btn("Copy", "btn btn-primary btn-sm", copyPublishMessage));
-  if (state.previewCopyStatus) row.appendChild(el("span", "preview-copy-status", state.previewCopyStatus));
+  var publishBtn = btn(state.publishing ? "Publishing…" : "Publish", "btn btn-green", publishToGitHub);
+  if (state.publishing){ publishBtn.disabled = true; publishBtn.style.opacity = ".6"; }
+  row.appendChild(publishBtn);
   box.appendChild(row);
-  return box;
+  box.appendChild(el("p", "tiny-note", "Publish চাপ দিলে উপরের সব বদলানো তথ্য data.json হিসেবে GitHub-এ সেভ হয়ে যাবে — তারপর সবার ফোনেই নতুন তথ্য দেখাবে।"));
+  if (state.publishStatus){
+    var st = el("p", "publish-status msg " + (state.publishOk ? "msg-ok" : "msg-err"), state.publishStatus);
+    st.setAttribute("role", "status");
+    box.appendChild(st);
+  }
+  sec.appendChild(box);
+  return sec;
 }
 
 /* Admin hardening: brute-force lockout + automatic logout.
@@ -916,13 +999,10 @@ function renderVoting(){
       row.style.marginTop = "12px";
       row.appendChild(btn("Reset Votes", "btn btn-amber btn-sm", function(){
         poll.options.forEach(function(o){ o.votes = 0; });
-        recordChange("Vote-এর ভোট রিসেট করা হয়েছে: \"" + poll.topic + "\"");
         render();
       }));
       row.appendChild(btn("Delete Vote", "btn btn-logout btn-sm", function(){
-        var topic = poll.topic;
         state.polls = state.polls.filter(function(p){ return p.id !== poll.id; });
-        recordChange("Vote মুছে ফেলা হয়েছে: \"" + topic + "\"");
         render();
       }));
       card.appendChild(row);
@@ -1024,13 +1104,12 @@ function renderAdminPanel(){
   h2.appendChild(sh);
   h2.appendChild(document.createTextNode("Admin Panel"));
   panel.appendChild(h2);
-  panel.appendChild(el("p", "admin-note", "এখানে যা বদলাবেন তা শুধু এই ফোনে প্রিভিউ হিসেবে দেখাবে — সবার ফোনে প্রকাশ হবে না। পরিবর্তন সবার জন্য প্রকাশ করতে, বদলানোর পর নিচে আসা Copy বাটন দিয়ে মেসেজটি Muse-কে পাঠান।"));
-  var previewBox = renderPreviewPublish();
-  if (previewBox) panel.appendChild(previewBox);
+  panel.appendChild(el("p", "admin-note", "এখানে যা বদলাবেন তা এই ফোনে সাথে সাথে বোর্ডে দেখাবে। সবার ফোনে প্রকাশ করতে, সব বদলানো শেষে একদম নিচের Publish বাটনে চাপ দিন — তাহলেই সবাই নতুন তথ্য দেখবে।"));
   panel.appendChild(adminCaptainsSection());
   panel.appendChild(adminNoticesSection());
   panel.appendChild(adminExamsSection());
   panel.appendChild(adminVotingSection());
+  panel.appendChild(renderPublishSection());
   return panel;
 }
 function adminSection(icon, title){
@@ -1065,9 +1144,6 @@ function adminCaptainsSection(){
       refs[f].addEventListener("input", function(){
         var v = cleanText(refs[f].value, f === "name" ? LIMITS.name : f === "phone" ? LIMITS.phone : LIMITS.url);
         state.captains[role][f] = v;
-        var labels = { name: "Name", img: "Photo URL", phone: "Phone", fb: "Facebook Link", wa: "WhatsApp Link" };
-        var prefix = (role === "captain" ? "Captain" : "Vice Captain") + " " + labels[f] + ": ";
-        recordCaptainChange(role, labels[f], prefix, v);
         scheduleBoardRefresh();
       });
     });
@@ -1108,7 +1184,6 @@ function adminNoticesSection(){
     var text = cleanText(formRefs.newNotice ? formRefs.newNotice.value : "", LIMITS.notice).trim();
     if (!text) return;
     state.notices.unshift({ id: Date.now(), text: text });
-    recordChange("Notice যোগ করা হয়েছে: \"" + text + "\"");
     render();
   }));
   sec.appendChild(add);
@@ -1126,7 +1201,6 @@ function adminNoticesSection(){
         if (!text) return;
         notice.text = text;
         state.editingNoticeId = null;
-        recordChange("Notice বদলানো হয়েছে: \"" + text + "\"");
         render();
       }));
       row.appendChild(btn("Cancel", "btn btn-ghost btn-sm", function(){ state.editingNoticeId = null; render(); }));
@@ -1140,9 +1214,7 @@ function adminNoticesSection(){
       var acts = el("div", "btn-row");
       acts.appendChild(btn("Edit", "btn btn-primary btn-sm", function(){ state.editingNoticeId = notice.id; render(); }));
       acts.appendChild(btn("Delete", "btn btn-logout btn-sm", function(){
-        var deletedText = notice.text;
         state.notices = state.notices.filter(function(n){ return n.id !== notice.id; });
-        recordChange("Notice মুছে ফেলা হয়েছে: \"" + deletedText + "\"");
         render();
       }));
       rowB.appendChild(acts);
@@ -1181,7 +1253,6 @@ function adminExamsSection(){
       date: newExamDate,
       examNotice: newExamNotice
     });
-    recordChange("Exam যোগ করা হয়েছে: " + subject + (newExamDate ? " — " + newExamDate : "") + (newExamNotice ? " — \"" + newExamNotice + "\"" : ""));
     render();
   }));
   sec.appendChild(add);
@@ -1207,7 +1278,6 @@ function adminExamsSection(){
         exam.date = validDateStr(r.date.value);
         exam.examNotice = cleanText(r.examNotice.value, LIMITS.examNotice);
         state.editingExamId = null;
-        recordChange("Exam বদলানো হয়েছে: " + exam.subject + (exam.date ? " — " + exam.date : "") + (exam.examNotice ? " — \"" + exam.examNotice + "\"" : ""));
         render();
       }));
       row.appendChild(btn("Cancel", "btn btn-ghost btn-sm", function(){ state.editingExamId = null; render(); }));
@@ -1227,9 +1297,7 @@ function adminExamsSection(){
       var acts = el("div", "btn-row");
       acts.appendChild(btn("Edit", "btn btn-primary btn-sm", function(){ state.editingExamId = exam.id; render(); }));
       acts.appendChild(btn("Delete", "btn btn-logout btn-sm", function(){
-        var deletedExam = exam.subject + (exam.date ? " — " + exam.date : "");
         state.exams = state.exams.filter(function(x){ return x.id !== exam.id; });
-        recordChange("Exam মুছে ফেলা হয়েছে: " + deletedExam);
         render();
       }));
       rowB.appendChild(acts);
@@ -1272,7 +1340,6 @@ function adminVotingSection(){
     }
     state.polls.push({ id: Date.now(), topic: topic, options: [{ name: o1, votes: 0 }, { name: o2, votes: 0 }] });
     state.pollMessage = "";
-    recordChange("Vote তৈরি করা হয়েছে: \"" + topic + "\" — Option 1: \"" + o1 + "\", Option 2: \"" + o2 + "\"");
     render();
   }));
   card.appendChild(el("p", "tiny-note", "Delete or reset votes from the Live Voting section below while you are logged in."));
@@ -1284,6 +1351,8 @@ function adminVotingSection(){
 try {
   render();
   booted = true;
+  /* Load the live board data fresh; the embedded data above is the fallback. */
+  loadBoardData();
   /* Refresh the countdown once a minute so it flips to 0D on exam day without a reload. */
   setInterval(function(){
     if (!state.isAdmin) render();
