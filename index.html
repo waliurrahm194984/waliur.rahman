@@ -118,14 +118,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .avatar{ position:relative; width:64px; height:64px; border-radius:9999px; overflow:hidden; border:2px solid #3b82f6; flex-shrink:0; background:#e2e8f0; box-shadow:0 0 0 3px rgba(59,130,246,.18), 0 8px 18px -6px rgba(15,23,42,.22); cursor:pointer; }
 .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
 .avatar-overlay{ position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(15,23,42,.55); border-radius:9999px; opacity:0; visibility:hidden; transition:opacity .2s ease, visibility .2s ease; }
-.avatar:hover .avatar-overlay,.avatar:focus-within .avatar-overlay,.avatar.show-social .avatar-overlay{ opacity:1; visibility:visible; }
-/* Phones have no hover: keep the Facebook / WhatsApp buttons visible on the
-   photo itself (small white circles), so they can always be tapped. Tapping
-   the photo still adds the dim backdrop behind them. */
-@media (hover: none){
-  .avatar-overlay{ opacity:1; visibility:visible; background:transparent; }
-  .avatar.show-social .avatar-overlay{ background:rgba(15,23,42,.55); }
-}
+.avatar.show-social .avatar-overlay{ opacity:1; visibility:visible; }
+/* Loading gate: while the newest data is being fetched, the board stays
+   hidden and only this line shows — nobody ever sees yesterday's info,
+   not even for a second. (No-JS browsers never get this class, so the
+   static board below still shows for them.) */
+#loading{ display:none; text-align:center; padding:56px 16px; font-size:16px; font-weight:700; color:#475569; }
+body.data-loading #root{ display:none; }
+body.data-loading #loading{ display:block; }
 .social-overlay-btn{ width:26px; height:26px; border-radius:9999px; display:inline-flex; align-items:center; justify-content:center; background:#fff; border:0; padding:0; flex-shrink:0; box-shadow:0 4px 10px rgba(0,0,0,.28); text-decoration:none; cursor:pointer; }
 .social-overlay-btn svg{ width:14px; height:14px; }
 .social-overlay-fb{ color:#2563eb; }
@@ -190,11 +190,12 @@ textarea.admin-input{ resize:vertical; }
 </head>
 <body>
 <div id="error-banner" role="alert"><span>Something went wrong while loading. Your board is shown below — tap reload if anything looks missing.</span><button type="button" id="error-reload">Reload</button></div>
+<div id="loading" role="status">Loading…</div>
 
 <!-- Static fallback: this content is in the page itself, so the board is never a blank
      white page — even if a script is blocked inside the Facebook / WhatsApp in-app
-     browser, the notices, exams, vote and captains below still show. The script at
-     the bottom replaces it with the live, editable board as soon as it runs. -->
+     browser, the notices, exams, vote and captains below still show. When the script
+     runs, it first hides this and fetches the newest data, then replaces it. -->
 <div id="root">
   <div class="wrap">
     <div class="panel site-header">
@@ -529,9 +530,6 @@ var state = {
   polls: JSON.parse(JSON.stringify(DEFAULT_POLLS)),
   captains: JSON.parse(JSON.stringify(DEFAULT_CAPTAINS)),
   ghToken: "",
-  dataLoaded: false,
-  lastLoadedJson: "",
-  votedLocally: false,
   publishing: false,
   publishOk: false,
   publishStatus: "",
@@ -559,110 +557,36 @@ function verifyAdminPassword(pw){
   return h;
 }
 
-/* ---------- Board data loading — ONE source of truth: data.json in the
-   board's GitHub repo. Every visitor's page reads that file DIRECTLY from
-   GitHub (Contents API, raw), so the moment the owner publishes, the new
-   data is what every phone gets — no waiting for the GitHub Pages site to
-   rebuild, and no stale cached copy of the page's own data.json. If the
-   GitHub read fails (offline, rate limit), the page falls back to the
-   data.json sitting next to it (the GitHub Pages copy), then to the
-   embedded DEFAULT_* values, so the board is never blank. Loading repeats
-   every few minutes, so a page left open picks up new data by itself —
-   but ONLY data actually published to the repo ever appears; nothing on
-   the board changes on its own. --------------------------------------- */
-function canonicalJson(value){
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
-  var keys = Object.keys(value).sort();
-  return "{" + keys.map(function(k){ return JSON.stringify(k) + ":" + canonicalJson(value[k]); }).join(",") + "}";
-}
-function boardDataFromRaw(data){
-  if (!data || typeof data !== "object") return null;
-  return {
-    notices: normalizeNotices(data.notices) || state.notices,
-    exams: normalizeExams(data.exams) || state.exams,
-    polls: normalizePolls(data.polls) || state.polls,
-    captains: normalizeCaptains(data.captains, DEFAULT_CAPTAINS) || state.captains
-  };
-}
+/* ---------- Board data loading: fetch data.json fresh on every visit.
+   The embedded DEFAULT_* values stay as the fallback if the fetch fails. -- */
 function applyBoardData(data){
-  var next = boardDataFromRaw(data);
-  if (!next) return false;
-  state.dataLoaded = true; /* a live copy of the board data has been seen */
-  /* lastLoadedJson always tracks the data exactly as it exists in the
-     repo — computed BEFORE the local vote merge below, so this phone's
-     own unpublished votes never make the publish safety check think the
-     repo holds unseen data. */
-  var repoJson = canonicalJson(next);
-  if (state.votedLocally){
-    /* Votes live only on this phone — keep this phone's own taps when
-       fresher board data arrives, instead of wiping them back to the
-       published counts. */
-    next.polls = next.polls.map(function(p){
-      var local = null;
-      state.polls.forEach(function(lp){ if (lp.id === p.id) local = lp; });
-      if (!local) return p;
-      return { id: p.id, topic: p.topic, options: p.options.map(function(o, idx){
-        var lv = local.options[idx] ? local.options[idx].votes : 0;
-        return { name: o.name, votes: Math.max(o.votes, lv) };
-      }) };
-    });
-  }
-  if (repoJson === canonicalJson(boardDataObject())){
-    state.lastLoadedJson = repoJson;
-    return false; /* already showing exactly this — nothing to do */
-  }
-  /* The owner is in the Admin panel with changes that differ from the last
-     loaded data: never overwrite his unsaved edits with fetched data. */
-  if (state.isAdmin && canonicalJson(boardDataObject()) !== state.lastLoadedJson) return false;
-  state.notices = next.notices;
-  state.exams = next.exams;
-  state.polls = next.polls;
-  state.captains = next.captains;
-  state.lastLoadedJson = repoJson;
-  return true;
-}
-function fetchWithTimeout(url, opts, ms){
-  opts = opts || {};
-  if (window.AbortController){
-    var ctrl = new AbortController();
-    opts.signal = ctrl.signal;
-    var timer = setTimeout(function(){ try { ctrl.abort(); } catch (e) {} }, ms || 8000);
-    return fetch(url, opts).then(function(res){ clearTimeout(timer); return res; }, function(err){ clearTimeout(timer); throw err; });
-  }
-  return fetch(url, opts);
+  if (!data || typeof data !== "object") return false;
+  var applied = false;
+  var n = normalizeNotices(data.notices);
+  if (n){ state.notices = n; applied = true; }
+  var e = normalizeExams(data.exams);
+  if (e){ state.exams = e; applied = true; }
+  var p = normalizePolls(data.polls);
+  if (p){ state.polls = p; applied = true; }
+  var c = normalizeCaptains(data.captains, DEFAULT_CAPTAINS);
+  if (c){ state.captains = c; applied = true; }
+  return applied;
 }
 function fetchJsonFresh(url){
-  return fetchWithTimeout(url, { cache: "no-store" }).then(function(res){
+  return fetch(url, { cache: "no-store" }).then(function(res){
     if (!res.ok) throw new Error("http " + res.status);
     return res.json();
   });
 }
-function fetchGitHubData(){
-  /* Public repo — reading needs no token. The Contents API reflects a new
-     commit immediately, unlike the Pages site, which rebuilds behind it. */
-  var url = "https://api.github.com/repos/" + GH_REPO + "/contents/data.json?ref=main";
-  return fetchWithTimeout(url, { cache: "no-store", headers: { "Accept": "application/vnd.github.raw+json" } }).then(function(res){
-    if (!res.ok) throw new Error("http " + res.status);
-    return res.json();
-  });
-}
-function loadBoardData(){
+function loadBoardData(done){
   var bust = "?_=" + Date.now();
-  var sources = [
-    function(){ return fetchGitHubData(); },
-    function(){ return fetchJsonFresh("data.json" + bust); },
-    function(){ return fetchJsonFresh("data:application/json;base64,eyJjYXB0YWlucyI6eyJjYXB0YWluIjp7ImZiIjoiIyIsImltZyI6Imh0dHBzOi8vdmlhLnBsYWNlaG9sZGVyLmNvbS8xMDAiLCJuYW1lIjoiV2FsaXVyIFJhaG1hbiIsInBob25lIjoiMDFYWFhYWFhYWFgiLCJ3YSI6IiMifSwidmljZUNhcHRhaW4iOnsiZmIiOiIjIiwiaW1nIjoiaHR0cHM6Ly92aWEucGxhY2Vob2xkZXIuY29tLzEwMCIsIm5hbWUiOiJWaWNlIENhcHRhaW4iLCJwaG9uZSI6IjAxWFhYWFhYWFhYIiwid2EiOiIjIn19LCJleGFtcyI6W3siZGF0ZSI6IjIwMjYtMTEtMjAiLCJleGFtTm90aWNlIjoiTWF0aCBleGFtIHNvbXBvcmtlOiBDaGFwdGVyIDMgdmFsbyBrb3JlIHBvcmUgYXNiYS4iLCJpZCI6MSwic3ViamVjdCI6Ik1hdGgifV0sIm5vdGljZXMiOlt7ImlkIjoxLCJ0ZXh0IjoiRmluYWwgc2VtZXN0ZXIgcm91dGluZSBpcyBvdXQuIn1dLCJwb2xscyI6W3siaWQiOjEsIm9wdGlvbnMiOlt7Im5hbWUiOiJDaGFwdGVyIDEiLCJ2b3RlcyI6MH0seyJuYW1lIjoiQ2hhcHRlciAyIiwidm90ZXMiOjB9XSwidG9waWMiOiJOZXh0IENsYXNzIFRlc3QgVG9waWM/In1dfQ==" + bust); }
-  ];
-  var i = 0;
-  function next(){
-    if (i >= sources.length) return; /* all failed — current data stays; the periodic reload retries */
-    sources[i++]().then(function(data){
-      if (!boardDataFromRaw(data)){ next(); return; }
-      if (applyBoardData(data)) render();
-    }).catch(function(){ next(); });
-  }
-  next();
+  fetchJsonFresh("data.json" + bust).catch(function(){
+    return fetchJsonFresh("assets/data.json" + bust);
+  }).then(function(data){
+    if (state.isAdmin) return; /* never clobber edits being made in the panel */
+    if (applyBoardData(data)) render();
+  }).catch(function(){ /* fetch failed — the embedded fallback data stays */ })
+  .then(function(){ if (done) done(); });
 }
 
 /* ---------- GitHub publish: the owner publishes updates himself.
@@ -694,31 +618,12 @@ function boardDataObject(){
 function utf8ToBase64(str){
   return btoa(unescape(encodeURIComponent(str)));
 }
-function b64ToUtf8(b64){
-  try { return decodeURIComponent(escape(atob(String(b64 || "").replace(/\s/g, "")))); }
-  catch (e) { return ""; }
-}
-function ghError(kind, status){
-  var err = new Error(kind);
-  err.status = status || 0;
-  return err;
-}
 function publishToGitHub(){
   if (state.publishing) return;
   var token = (getGhToken() || "").trim();
   if (!token){
     state.publishOk = false;
-    state.publishStatus = "Token পাওয়া যায়নি — নিচের ঘরে GitHub Token টি বসান, তারপর আবার Publish চাপ দিন।";
-    render();
-    return;
-  }
-  if (!state.dataLoaded){
-    /* No live data was ever loaded on this phone, so the panel is showing
-       the page's built-in copy. Publishing now would push that old copy
-       over everyone's board — the exact "সবাই পুরোনোটাই দেখে" bug. Block
-       it and say why, instead of silently writing stale data. */
-    state.publishOk = false;
-    state.publishStatus = "Live data এখনো load হয়নি — ইন্টারনেট চালু করে page টা reload করুন, board এর তথ্য আসার পর আবার Publish চাপ দিন। (পুরোনো তথ্য দিয়ে সবার board মুছে যাওয়া ঠেকাতে Publish আটকানো হলো।)";
+    state.publishStatus = "আগে নিচের ঘরে GitHub Token টি বসান।";
     render();
     return;
   }
@@ -732,99 +637,35 @@ function publishToGitHub(){
     "Accept": "application/vnd.github+json",
     "Content-Type": "application/json"
   };
-  var sentJson = canonicalJson(boardDataFromRaw(boardDataObject()));
   function fail(msg){
     state.publishing = false;
     state.publishOk = false;
     state.publishStatus = msg;
     render();
   }
-  function getCurrent(){
-    return fetchWithTimeout(apiUrl + "?ref=main", { headers: headers, cache: "no-store" }).then(function(res){
-      if (res.status === 404) return null; /* data.json not in the repo yet — it will be created */
-      if (res.status === 401) throw ghError("badtoken", 401);
-      if (res.status === 403) throw ghError("noperm", 403);
-      if (!res.ok) throw ghError("http", res.status);
-      return res.json();
-    });
-  }
-  function putCurrent(current){
+  fetch(apiUrl + "?ref=main", { headers: headers }).then(function(res){
+    if (res.status === 404) return null; /* data.json not in the repo yet — it will be created */
+    if (res.status === 401 || res.status === 403){ var authErr = new Error("auth"); throw authErr; }
+    if (!res.ok) throw new Error("http");
+    return res.json();
+  }).then(function(current){
     var body = {
       message: "Board update from Admin panel",
       content: utf8ToBase64(JSON.stringify(boardDataObject(), null, 2)),
       branch: "main"
     };
     if (current && current.sha) body.sha = current.sha;
-    return fetchWithTimeout(apiUrl, { method: "PUT", headers: headers, body: JSON.stringify(body) }, 15000).then(function(res){
-      if (res.status === 401) throw ghError("badtoken", 401);
-      if (res.status === 403) throw ghError("noperm", 403);
-      if (res.status === 409 || res.status === 422) throw ghError("conflict", res.status);
-      if (!res.ok) throw ghError("http", res.status);
-      return res;
-    });
-  }
-  getCurrent().then(function(current){
-    if (current && current.content){
-      /* Safety check: if the repo holds board data this phone has never
-         loaded (e.g. the page was opened offline and Admin was used before
-         the live data arrived), publishing would erase it for everyone.
-         Refuse, and tell the owner to reload first. */
-      var remote = null;
-      try { remote = JSON.parse(b64ToUtf8(current.content)); } catch (e) { remote = null; }
-      var remoteBoard = boardDataFromRaw(remote);
-      if (remoteBoard){
-        var remoteJson = canonicalJson(remoteBoard);
-        if (remoteJson !== state.lastLoadedJson && remoteJson !== sentJson){
-          state.publishing = false;
-          state.publishOk = false;
-          state.publishStatus = "Publish আটকানো হলো: GitHub-এ এমন তথ্য আছে যা এই ফোনে load হয়নি। Page টা reload করে live তথ্য আসার পর আবার edit করে Publish করুন — নাহলে সেই তথ্য মুছে যেত।";
-          render();
-          return null;
-        }
-      }
-    }
-    return putCurrent(current).catch(function(err){
-      if (err && err.message === "conflict"){
-        /* Someone/something updated the file in between — take the fresh
-           sha and write once more. */
-        return getCurrent().then(putCurrent);
-      }
-      throw err;
-    });
-  }).then(function(done){
-    if (done === null) return; /* safety check above already reported */
-    /* Verify before celebrating: read the file straight back from GitHub
-       and confirm it now holds exactly what was sent. */
-    return fetchWithTimeout(apiUrl + "?ref=main", { cache: "no-store", headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github.raw+json" } }).then(function(res){
-      if (!res.ok) throw ghError("http", res.status);
-      return res.json();
-    }).then(function(saved){
-      var savedBoard = boardDataFromRaw(saved);
-      state.publishing = false;
-      if (savedBoard && canonicalJson(savedBoard) === sentJson){
-        state.publishOk = true;
-        state.lastLoadedJson = sentJson;
-        state.publishStatus = "Published! যাচাই করা হয়েছে — তথ্য GitHub-এ সেভ হয়েছে। এখন সবাই link খুললেই নতুন তথ্য দেখবে, আর যাদের page খোলা আছে তাদের কাছেও কয়েক মিনিটে পৌঁছে যাবে।";
-      } else {
-        state.publishOk = false;
-        state.publishStatus = "Publish পাঠানো হয়েছে, কিন্তু GitHub-এ যাচাই করা যায়নি। একটু পরে link টা খুলে দেখুন নতুন তথ্য এসেছে কিনা।";
-      }
-      render();
-    }).catch(function(){
-      state.publishing = false;
-      state.publishOk = false;
-      state.publishStatus = "Publish পাঠানো হয়েছে, কিন্তু GitHub-এ যাচাই করা যায়নি। একটু পরে link টা খুলে দেখুন নতুন তথ্য এসেছে কিনা।";
-      render();
-    });
+    return fetch(apiUrl, { method: "PUT", headers: headers, body: JSON.stringify(body) });
+  }).then(function(res){
+    if (res.status === 401 || res.status === 403) throw new Error("auth");
+    if (!res.ok) throw new Error("http");
+    state.publishing = false;
+    state.publishOk = true;
+    state.publishStatus = "Published! Sobai 1 minute er moddhe notun ta dekhbe.";
+    render();
   }).catch(function(err){
-    if (err && err.message === "badtoken"){
-      fail("Token টি GitHub মানছে না (401) — token টি ভুল বা মেয়াদ শেষ। Token এর ঘরে ঠিক token টি আবার বসান।");
-    } else if (err && err.message === "noperm"){
-      fail("Token দিয়ে এই repo-তে লেখা যাচ্ছে না (403) — token টিতে waliur.rahman repo-র Contents Read and write অনুমতি থাকতে হবে।");
-    } else if (err && err.message === "conflict"){
-      fail("দুইবার চেষ্টা করেও file টি আটকে গেছে (conflict)। এক মিনিট পরে আবার Publish চাপ দিন।");
-    } else if (err && err.message === "http"){
-      fail("Publish হয়নি — GitHub উত্তর দিয়েছে (HTTP " + (err.status || "?") + ")। ইন্টারনেট চেক করে আবার চেষ্টা করুন।");
+    if (err && err.message === "auth"){
+      fail("Token টি ঠিক নয়, অথবা এই repo-তে লেখার অনুমতি নেই। Token টি আবার চেক করুন।");
     } else {
       fail("Publish হয়নি — ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।");
     }
@@ -884,7 +725,6 @@ var root = document.getElementById("root");
 
 function render(){
   formRefs = {};
-  uidCounter = 0; /* deterministic field ids per render, so focus restore after a re-render works */
   var wrap = el("div", "wrap");
   wrap.appendChild(renderHeader());
   if (state.showLogin && !state.isAdmin) wrap.appendChild(renderLogin());
@@ -1158,7 +998,6 @@ function renderVoting(){
       b.appendChild(el("span", "count", opt.votes + " Votes"));
       b.addEventListener("click", function(){
         poll.options[i].votes++;
-        state.votedLocally = true;
         render();
       });
       opts.appendChild(b);
@@ -1232,7 +1071,8 @@ function renderCaptains(){
       avatar.innerHTML = AVATAR_SVG; /* built-in avatar — no image file to break */
     }
     /* Facebook / WhatsApp icons sit ON TOP of the photo (overlay), like the
-       original code — they appear on hover, keyboard focus, or tap. */
+       original code — they appear ONLY on tap, never on hover, so the photo
+       is always clean until the owner taps it. */
     var overlay = el("div", "avatar-overlay");
     overlay.appendChild(socialOverlayIcon(data.fb, "social-overlay-fb", ICONS.fb, "Facebook"));
     overlay.appendChild(socialOverlayIcon(data.wa, "social-overlay-wa", ICONS.wa, "WhatsApp"));
@@ -1519,23 +1359,38 @@ function adminVotingSection(){
 
 /* ---------- Boot: if anything above failed, the static board in the HTML stays visible ---------- */
 try {
-  state.lastLoadedJson = canonicalJson(boardDataFromRaw(boardDataObject()));
-  render();
-  booted = true;
-  /* Load the live board data fresh, straight from the repo; the embedded
-     data above is only the fallback until that load lands. */
-  loadBoardData();
-  /* Refresh the countdown once a minute so it flips to 0D on exam day without a reload. */
+  /* Fresh data FIRST: hide the board until the newest data.json has loaded,
+     so nobody ever sees yesterday's info for a second. The embedded data
+     is shown only if the fetch fails (offline). */
+  document.body.classList.add("data-loading");
+  loadBoardData(function(){
+    try {
+      document.body.classList.remove("data-loading");
+      render();
+      booted = true;
+    } catch (err) {
+      document.body.classList.remove("data-loading");
+      showErrorBanner();
+    }
+  });
+  /* Safety net: if the fetch hangs (very slow network), show the embedded
+     board after 10 seconds instead of "Loading…" forever. A late fetch
+     still updates it afterwards. */
+  setTimeout(function(){
+    if (!booted){
+      document.body.classList.remove("data-loading");
+      try { render(); booted = true; } catch (err) { showErrorBanner(); }
+    }
+  }, 10000);
+  /* Every minute, quietly check data.json again so a page left open picks
+     up a Publish without any manual refresh. Never touches Admin edits. */
   setInterval(function(){
-    if (!state.isAdmin) render();
+    if (state.isAdmin) return;
+    loadBoardData();
+    render();
   }, 60000);
-  /* Re-read the published data every few minutes, so a page left open on a
-     classmate's phone picks up the owner's latest Publish by itself. Data
-     only ever changes this way when the owner has actually published. */
-  setInterval(function(){
-    if (!state.isAdmin) loadBoardData();
-  }, 180000);
 } catch (err) {
+  document.body.classList.remove("data-loading");
   showErrorBanner();
 }
 })();
