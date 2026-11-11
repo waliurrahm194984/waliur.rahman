@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'none'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Class Notice Board — Department of Mechanical">
+<title>Class Notice Board</title>
+<style>
+:root{ color-scheme: light; --ink:#0f172a; --muted:#64748b; --line:rgba(15,23,42,.12); --blue:#2563eb; --blue-dark:#1d4ed8; --orange:#f97316; --green:#16a34a; --red:#dc2626; }
+*,*::before,*::after{ box-sizing:border-box; }
+*{ -webkit-tap-highlight-color:transparent; }
+html,body{ max-width:100%; overflow-x:hidden; }
+body{
+  margin:0; padding:16px; color:var(--ink);
+  font-family:ui-sans-system,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background-color:#f7f9fc;
+  background-image:radial-gradient(900px 520px at 8% -10%, rgba(59,130,246,.10), transparent 60%),radial-gradient(820px 480px at 100% 0%, rgba(14,165,233,.08), transparent 55%),radial-gradient(700px 500px at 50% 110%, rgba(34,197,94,.05), transparent 60%);
+  background-attachment:fixed;
+}
+@media(min-width:768px){ body{ padding:32px; } }
+img{ max-width:100%; }
+p,h1,h2,h3,span,a,button,li,div{ overflow-wrap:anywhere; word-break:break-word; }
+.wrap-text{ overflow-wrap:anywhere !important; word-break:break-word !important; white-space:pre-wrap !important; max-width:100% !important; min-width:0 !important; }
+::selection{ background:rgba(59,130,246,.22); }
+button{ font-family:inherit; cursor:pointer; transition:transform .18s ease, box-shadow .25s ease, background-color .25s ease, color .25s ease, border-color .25s ease; }
+button:hover{ transform:translateY(-1px); }
+button:active{ transform:translateY(0) scale(.985); }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible{ outline:3px solid rgba(59,130,246,.45); outline-offset:2px; }
+.wrap{ max-width:56rem; margin:0 auto; padding-bottom:5rem; }
+.wrap > * + *{ margin-top:1.5rem; }
+@media(min-width:768px){ .wrap > * + *{ margin-top:1.75rem; } }
+.panel{
+  background:#fff; border:1px solid var(--line); border-radius:20px;
+  box-shadow:0 22px 44px -16px rgba(15,23,42,.22), 0 10px 20px -10px rgba(15,23,42,.14), 0 3px 8px rgba(15,23,42,.07), inset 0 1px 0 #fff;
+  padding:20px; max-width:100%;
+}
+@media(min-width:768px){ .panel{ padding:28px; } }
+.blue-panel{ background:linear-gradient(165deg,#ffffff,rgba(239,246,255,.95)); border-color:rgba(59,130,246,.22); box-shadow:0 22px 44px -16px rgba(37,99,235,.24), 0 10px 20px -10px rgba(15,23,42,.14), 0 3px 8px rgba(15,23,42,.07), inset 0 1px 0 #fff; }
+.site-header{ display:flex; justify-content:space-between; align-items:center; gap:16px; background:linear-gradient(120deg,#ffffff,rgba(248,250,252,.98) 55%,rgba(239,246,255,.96)); }
+.site-header h1{ margin:0; font-size:30px; line-height:1.15; font-weight:800; letter-spacing:-.02em; }
+@media(min-width:768px){ .site-header h1{ font-size:36px; } }
+.site-header h1 .accent{ color:var(--blue); }
+.dept-pill{ display:inline-block; margin-top:10px; padding:4px 12px; border-radius:9999px; font-size:13px; font-weight:700; background:linear-gradient(180deg,#eff6ff,#dbeafe); border:1px solid rgba(59,130,246,.18); color:#1e40af; box-shadow:0 4px 12px -6px rgba(37,99,235,.25), inset 0 1px 0 #fff; }
+.btn{ border:0; font-weight:700; border-radius:12px; padding:10px 16px; font-size:15px; flex-shrink:0; }
+.btn-admin{ background:#fff; color:var(--red); border:1px solid #fee2e2; box-shadow:0 8px 20px -10px rgba(15,23,42,.25); }
+.btn-admin:hover{ background:#fef2f2; }
+.btn-logout{ background:var(--red); color:#fff; box-shadow:0 10px 20px -10px rgba(220,38,38,.5); }
+.btn-logout:hover{ background:#ef4444; }
+.btn-primary{ background:var(--blue); color:#fff; box-shadow:0 8px 16px -8px rgba(37,99,235,.55); }
+.btn-primary:hover{ background:#3b82f6; }
+.btn-green{ background:#16a34a; color:#fff; box-shadow:0 8px 16px -8px rgba(22,163,74,.55); }
+.btn-green:hover{ background:#22c55e; }
+.btn-sm{ padding:6px 12px; font-size:13px; border-radius:8px; }
+.btn-amber{ background:#f59e0b; color:#fff; } .btn-amber:hover{ background:#fbbf24; }
+.btn-ghost{ background:#fff; border:1px solid #e2e8f0; color:#334155; }
+.btn-ghost:hover{ background:#f1f5f9; }
+.section-title{ display:flex; align-items:center; gap:10px; margin:0 0 18px; font-size:22px; font-weight:800; }
+@media(min-width:768px){ .section-title{ font-size:24px; margin-bottom:20px; } }
+.icon-box{ display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:12px; color:#fff; flex-shrink:0; }
+.icon-box svg{ width:18px; height:18px; }
+.icon-blue{ background:var(--blue); box-shadow:0 6px 14px -6px rgba(37,99,235,.55); }
+.icon-orange{ background:var(--orange); box-shadow:0 6px 14px -6px rgba(249,115,22,.55); }
+.icon-green{ background:#16a34a; box-shadow:0 6px 14px -6px rgba(22,163,74,.55); }
+.live-dot{ width:10px; height:10px; border-radius:9999px; background:#22c55e; animation:blink 1.6s ease-in-out infinite; }
+@keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+.stack > * + *{ margin-top:12px; }
+.stack-lg > * + *{ margin-top:16px; }
+.notice-card,.exam-card,.poll-card,.subcard{
+  background:#fff; border:1px solid var(--line); border-radius:14px;
+  box-shadow:0 14px 28px -12px rgba(15,23,42,.20), 0 5px 12px -4px rgba(15,23,42,.10), 0 1px 3px rgba(15,23,42,.06), inset 0 1px 0 #fff;
+  width:100%; max-width:100%;
+}
+.notice-card{ padding:14px 16px; transition:box-shadow .25s ease, transform .25s ease, border-color .25s ease; }
+@media(min-width:768px){ .notice-card{ padding:16px 20px; } }
+.notice-card:hover{ transform:translateY(-2px); border-color:rgba(59,130,246,.28); box-shadow:0 20px 36px -14px rgba(15,23,42,.24), 0 8px 16px -6px rgba(15,23,42,.12), inset 0 1px 0 #fff; }
+.notice-card p{ margin:0; font-size:15.5px; line-height:1.65; }
+@media(min-width:768px){ .notice-card p{ font-size:16px; } }
+.exam-card{ border-radius:14px; overflow:hidden; }
+.exam-head{ width:100%; display:flex; align-items:flex-start; gap:12px; padding:16px; background:none; border:0; text-align:left; font-size:16px; }
+.exam-head:hover{ background:#f8fafc; transform:none; }
+.exam-head .subject{ flex:1 1 auto; min-width:0; font-weight:700; }
+.exam-head .date{ color:#475569; font-weight:600; font-size:15px; }
+.exam-head .sep{ color:#94a3b8; margin:0 2px; }
+.exam-head .right{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.exam-head .chev{ color:#94a3b8; display:inline-flex; transition:transform .2s ease; }
+.exam-head .chev svg{ width:14px; height:14px; }
+.exam-card.open .chev{ transform:rotate(180deg); }
+.exam-body{ display:none; padding:0 16px 16px; }
+.exam-card.open .exam-body{ display:block; }
+.exam-today{ border-color:rgba(34,197,94,.55) !important; box-shadow:0 0 0 3px rgba(34,197,94,.14), 0 12px 28px -12px rgba(34,197,94,.35) !important; }
+.today-dot{ width:13px; height:13px; border-radius:9999px; background:#22c55e; flex-shrink:0; margin-top:5px; box-shadow:0 0 0 4px rgba(34,197,94,.22), 0 0 16px 3px rgba(34,197,94,.75); animation:pulseGreen 1.25s ease-in-out infinite; }
+.soon-dot{ width:10px; height:10px; border-radius:9999px; background:#f97316; flex-shrink:0; margin-top:6px; box-shadow:0 0 0 3px rgba(249,115,22,.16); }
+.normal-dot{ width:10px; height:10px; border-radius:9999px; background:#cbd5e1; flex-shrink:0; margin-top:6px; }
+@keyframes pulseGreen{ 0%,100%{ box-shadow:0 0 0 3px rgba(34,197,94,.28), 0 0 12px 2px rgba(34,197,94,.6); transform:scale(1); } 50%{ box-shadow:0 0 0 7px rgba(34,197,94,.14), 0 0 22px 6px rgba(34,197,94,.9); transform:scale(1.18); } }
+.countdown-badge{ font-size:12.5px; font-weight:800; padding:5px 10px; border-radius:9999px; white-space:nowrap; }
+.countdown-normal{ background:#f1f5f9; color:#334155; border:1px solid #e2e8f0; }
+.countdown-soon{ background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; }
+.countdown-today{ background:#dcfce7; color:#14532d; border:1px solid #86efac; box-shadow:0 0 14px rgba(34,197,94,.35); }
+.countdown-past{ background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0; }
+.exam-notice-box{ background:linear-gradient(160deg,#eff6ff,#ffffff); border:1px solid rgba(59,130,246,.20); border-radius:12px; box-shadow:0 8px 18px -10px rgba(15,23,42,.16), inset 0 1px 0 #fff; padding:14px 16px; }
+.exam-notice-box .label{ margin:0 0 4px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--blue); }
+.exam-notice-box p{ margin:0; font-size:15px; line-height:1.6; color:#1e293b; }
+.exam-notice-box .today-line{ margin-top:8px; font-size:14px; font-weight:800; color:#15803d; display:flex; align-items:center; gap:8px; }
+.hint{ font-size:12px; color:#94a3b8; margin:14px 0 0; }
+.poll-card{ padding:16px; border-radius:16px; }
+.poll-card h3{ margin:0 0 12px; font-size:18px; font-weight:700; }
+.vote-btn{ width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; text-align:left; padding:12px; border-radius:12px; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:15px; box-shadow:0 6px 14px -8px rgba(15,23,42,.14), inset 0 1px 0 #fff; }
+.vote-btn:hover{ border-color:rgba(34,197,94,.45); background:#f0fdf4; }
+.vote-btn .opt{ flex:1 1 auto; min-width:0; font-weight:600; }
+.vote-btn .count{ flex-shrink:0; color:#15803d; font-weight:800; white-space:nowrap; }
+.empty{ color:var(--muted); margin:0; }
+.captains{ display:grid; gap:16px; }
+@media(min-width:768px){ .captains{ grid-template-columns:1fr 1fr; } }
+.captain-card{ display:flex; align-items:center; gap:16px; padding:16px; transition:transform .25s ease, box-shadow .3s ease, border-color .3s ease; }
+.captain-card:hover{ transform:translateY(-3px); border-color:rgba(59,130,246,.32); }
+.avatar{ position:relative; width:64px; height:64px; border-radius:9999px; overflow:hidden; border:2px solid #3b82f6; flex-shrink:0; background:#e2e8f0; box-shadow:0 0 0 3px rgba(59,130,246,.18), 0 8px 18px -6px rgba(15,23,42,.22); cursor:pointer; }
+.avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.avatar-overlay{ position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(15,23,42,.55); border-radius:9999px; opacity:0; visibility:hidden; transition:opacity .2s ease, visibility .2s ease; }
+.avatar:hover .avatar-overlay,.avatar:focus-within .avatar-overlay,.avatar.show-social .avatar-overlay{ opacity:1; visibility:visible; }
+/* Phones have no hover: keep the Facebook / WhatsApp buttons visible on the
+   photo itself (small white circles), so they can always be tapped. Tapping
+   the photo still adds the dim backdrop behind them. */
+@media (hover: none){
+  .avatar-overlay{ opacity:1; visibility:visible; background:transparent; }
+  .avatar.show-social .avatar-overlay{ background:rgba(15,23,42,.55); }
+}
+.social-overlay-btn{ width:26px; height:26px; border-radius:9999px; display:inline-flex; align-items:center; justify-content:center; background:#fff; border:0; padding:0; flex-shrink:0; box-shadow:0 4px 10px rgba(0,0,0,.28); text-decoration:none; cursor:pointer; }
+.social-overlay-btn svg{ width:14px; height:14px; }
+.social-overlay-fb{ color:#2563eb; }
+.social-overlay-wa{ color:#16a34a; }
+.social-overlay-btn.is-off{ cursor:default; }
+.captain-info{ min-width:0; flex:1; }
+.captain-info h3{ margin:0; font-size:18px; font-weight:700; }
+.captain-info .role{ margin:2px 0 0; font-size:14px; font-weight:600; color:#1d4ed8; }
+.captain-info .phone{ margin:2px 0 0; font-size:14px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.captain-info .phone svg{ width:13px; height:13px; color:#3b82f6; flex-shrink:0; }
+.footer{ text-align:center; margin-top:40px; }
+.footer .line{ height:1px; background:linear-gradient(90deg,transparent,rgba(15,23,42,.22),transparent); margin-bottom:16px; }
+.footer p{ margin:0; font-weight:800; letter-spacing:.18em; font-size:14px; }
+/* Admin */
+.admin-panel{ border-color:rgba(239,68,68,.18); }
+.admin-panel h2{ margin:0; font-size:24px; font-weight:800; color:var(--red); display:flex; align-items:center; gap:10px; }
+.admin-panel h2 svg{ width:22px; height:22px; }
+.admin-note{ font-size:14px; color:var(--muted); margin:6px 0 0; }
+.admin-sec{ margin-top:32px; }
+.admin-sec:first-of-type{ margin-top:28px; }
+.admin-sec h3{ margin:0 0 12px; font-size:18px; font-weight:700; color:#1d4ed8; display:flex; align-items:center; gap:8px; }
+.admin-sec h3 svg{ width:17px; height:17px; }
+.subcard{ padding:16px; border-radius:14px; }
+.subcard .sub-title{ margin:0 0 10px; font-weight:700; font-size:14px; }
+.grid2{ display:grid; gap:16px; }
+@media(min-width:768px){ .grid2{ grid-template-columns:1fr 1fr; } }
+.grid2-fields{ display:grid; gap:12px; }
+@media(min-width:768px){ .grid2-fields{ grid-template-columns:1fr 1fr; } }
+.field label{ display:block; font-size:11.5px; font-weight:700; color:#475569; margin-bottom:5px; text-transform:uppercase; letter-spacing:.06em; }
+.admin-input{ width:100%; padding:9px 12px; border-radius:10px; background:#fff; border:1px solid #e2e8f0; color:var(--ink); outline:none; font-size:14px; font-family:inherit; box-shadow:inset 0 1px 2px rgba(15,23,42,.04); max-width:100%; overflow-wrap:anywhere; word-break:break-word; }
+.admin-input::placeholder{ color:#94a3b8; }
+.admin-input:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.16); }
+textarea.admin-input{ resize:vertical; }
+.login-row{ display:flex; flex-direction:column; gap:10px; }
+@media(min-width:640px){ .login-row{ flex-direction:row; } }
+.login-row .admin-input{ flex:1; padding:11px 14px; }
+.msg{ margin:10px 0 0; font-size:14px; font-weight:700; }
+.msg-ok{ color:#16a34a; } .msg-err{ color:var(--red); }
+.granted{ display:flex; justify-content:space-between; align-items:center; padding:16px 20px; }
+.granted p{ margin:0; font-size:14px; font-weight:700; color:#16a34a; }
+.dismiss{ background:none; border:0; color:#64748b; font-size:22px; font-weight:700; line-height:1; padding:4px 12px; }
+.dismiss:hover{ color:var(--ink); transform:none; }
+.row-between{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.row-between .main{ flex:1; min-width:0; }
+.btn-row{ display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+.admin-item-text{ margin:0; font-size:15px; line-height:1.6; color:#1e293b; }
+.admin-item-sub{ margin:2px 0 0; font-size:14px; color:#475569; }
+.tiny-note{ font-size:12px; color:var(--muted); margin:8px 0 0; }
+.publish-box{ margin-top:16px; background:#f0fdf4; border:1px solid #86efac; border-radius:14px; padding:14px 16px; box-shadow:0 8px 18px -10px rgba(22,163,74,.25), inset 0 1px 0 #fff; }
+.publish-box p{ margin:0; font-size:14.5px; line-height:1.65; color:#14532d; font-weight:600; }
+.publish-box .field{ margin-top:12px; }
+.publish-box .btn-row{ margin-top:14px; align-items:center; }
+.publish-status{ font-size:14px; font-weight:700; }
+#error-banner{ display:none; max-width:56rem; margin:0 auto 16px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:14px; padding:14px 16px; font-size:14px; font-weight:600; box-shadow:0 10px 22px -12px rgba(153,27,27,.3); }
+#error-banner.show{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+#error-banner button{ background:var(--red); color:#fff; border:0; padding:8px 14px; border-radius:10px; font-weight:700; flex-shrink:0; }
+@media (prefers-reduced-motion: reduce){
+  button:hover,.captain-card:hover,.notice-card:hover{ transform:none; }
+  .today-dot,.live-dot{ animation:none; }
+}
+</style>
+</head>
+<body>
+<div id="error-banner" role="alert"><span>Something went wrong while loading. Your board is shown below — tap reload if anything looks missing.</span><button type="button" id="error-reload">Reload</button></div>
+
+<!-- Static fallback: this content is in the page itself, so the board is never a blank
+     white page — even if a script is blocked inside the Facebook / WhatsApp in-app
+     browser, the notices, exams, vote and captains below still show. The script at
+     the bottom replaces it with the live, editable board as soon as it runs. -->
+<div id="root">
+  <div class="wrap">
+    <div class="panel site-header">
+      <div style="min-width:0;flex:1">
+        <h1>Notice <span class="accent">Board</span></h1>
+        <span class="dept-pill">Department of mechanical</span>
+      </div>
+    </div>
+    <div class="panel blue-panel">
+      <h2 class="section-title" style="color:#1d4ed8"><span class="icon-box icon-blue"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h3l5 4.5v-13L6 10H3zm13.5 2a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zM14 5.6v12.8c2.9-1.2 5-3.9 5-6.4s-2.1-5.2-5-6.4z"/></svg></span>Notices</h2>
+      <div class="stack">
+        <div class="notice-card"><p class="wrap-text">Final semester routine is out.</p></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title"><span class="icon-box icon-orange"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zm-7 8.32V16c0 1.66 3.13 3 7 3s7-1.34 7-3v-4.68l-7 3.82-7-3.82z"/></svg></span>Upcoming Exams</h2>
+      <div class="stack">
+        <div class="exam-card"><div class="exam-head" style="cursor:default"><span class="normal-dot"></span><span class="subject">Math <span class="sep">—</span> <span class="date">2026-11-20</span></span><span class="right"><span class="countdown-badge countdown-normal">9D</span></span></div></div>
+      </div>
+      <p class="hint">Tap an exam to see its notice.</p>
+    </div>
+    <div class="panel">
+      <h2 class="section-title"><span class="icon-box icon-green"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 9h3v10H5zM10.5 4h3v15h-3zM16 12h3v7h-3z"/></svg></span><span style="color:#15803d">Live Voting</span><span class="live-dot"></span></h2>
+      <div class="stack-lg">
+        <div class="poll-card"><h3 class="wrap-text">Next Class Test Topic?</h3>
+          <div class="stack">
+            <div class="vote-btn" style="cursor:default"><span class="opt">Chapter 1</span><span class="count">0 Votes</span></div>
+            <div class="vote-btn" style="cursor:default"><span class="opt">Chapter 2</span><span class="count">0 Votes</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="captains">
+      <div class="panel captain-card">
+        <div class="avatar"><svg viewBox="0 0 100 100" width="64" height="64" aria-hidden="true"><rect width="100" height="100" fill="#dbeafe"/><circle cx="50" cy="38" r="17" fill="#2563eb"/><path d="M18 88c4-19 17-27 32-27s28 8 32 27" fill="#2563eb"/></svg><span class="avatar-overlay"><span class="social-overlay-btn social-overlay-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.55c0-.93.26-1.56 1.58-1.56h1.7V3.14c-.3-.04-1.31-.13-2.49-.13-2.47 0-4.16 1.5-4.16 4.26v2.33H7.38v3.2h2.75V21h3.37z"/></svg></span><span class="social-overlay-btn social-overlay-wa" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 15.06L2 22l5.06-1.49A9.9 9.9 0 1 0 12.04 2zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-2.97.87.9-2.9-.2-.31a8.2 8.2 0 1 1 6.75 3.67zm4.5-6.14c-.25-.13-1.46-.72-1.69-.8-.22-.08-.39-.13-.55.12-.17.25-.63.8-.78.97-.14.16-.29.18-.54.06a6.7 6.7 0 0 1-3.36-2.93c-.25-.43.25-.4.72-1.33a.55.55 0 0 0-.03-.51c-.08-.13-.55-1.34-.76-1.83-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.25-.86.85-.86 2.1 0 1.24.9 2.44 1.03 2.6.12.17 1.78 2.72 4.31 3.81.6.26 1.07.42 1.44.53.6.19 1.15.17 1.59.1.48-.07 1.46-.6 1.67-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.29z"/></svg></span></span></div>
+        <div class="captain-info"><h3 class="wrap-text">Waliur Rahman</h3><p class="role">Class Captain</p><p class="phone">01XXXXXXXXX</p></div>
+      </div>
+      <div class="panel captain-card">
+        <div class="avatar"><svg viewBox="0 0 100 100" width="64" height="64" aria-hidden="true"><rect width="100" height="100" fill="#dbeafe"/><circle cx="50" cy="38" r="17" fill="#2563eb"/><path d="M18 88c4-19 17-27 32-27s28 8 32 27" fill="#2563eb"/></svg><span class="avatar-overlay"><span class="social-overlay-btn social-overlay-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.55c0-.93.26-1.56 1.58-1.56h1.7V3.14c-.3-.04-1.31-.13-2.49-.13-2.47 0-4.16 1.5-4.16 4.26v2.33H7.38v3.2h2.75V21h3.37z"/></svg></span><span class="social-overlay-btn social-overlay-wa" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 15.06L2 22l5.06-1.49A9.9 9.9 0 1 0 12.04 2zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-2.97.87.9-2.9-.2-.31a8.2 8.2 0 1 1 6.75 3.67zm4.5-6.14c-.25-.13-1.46-.72-1.69-.8-.22-.08-.39-.13-.55.12-.17.25-.63.8-.78.97-.14.16-.29.18-.54.06a6.7 6.7 0 0 1-3.36-2.93c-.25-.43.25-.4.72-1.33a.55.55 0 0 0-.03-.51c-.08-.13-.55-1.34-.76-1.83-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.25-.86.85-.86 2.1 0 1.24.9 2.44 1.03 2.6.12.17 1.78 2.72 4.31 3.81.6.26 1.07.42 1.44.53.6.19 1.15.17 1.59.1.48-.07 1.46-.6 1.67-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.29z"/></svg></span></span></div>
+        <div class="captain-info"><h3 class="wrap-text">Vice Captain</h3><p class="role">Vice Captain</p><p class="phone">01XXXXXXXXX</p></div>
+      </div>
+    </div>
+    <div class="footer"><div class="line"></div><p>Developed By Waliur</p></div>
+  </div>
+</div>
+<noscript><p style="text-align:center;font-weight:700;padding:12px">JavaScript is off in this browser, so the board above is read-only.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+var booted = false;
+function showErrorBanner(){
+  var b = document.getElementById("error-banner");
+  if (b) b.className = "show";
+}
+window.addEventListener("error", function(){ if (!booted) showErrorBanner(); });
+var reloadBtn = document.getElementById("error-reload");
+if (reloadBtn) reloadBtn.addEventListener("click", function(){ location.reload(); });
+
+/* ---------- Icons (fixed inline SVG, no external files) ---------- */
+var ICONS = {
+  horn: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h3l5 4.5v-13L6 10H3zm13.5 2a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zM14 5.6v12.8c2.9-1.2 5-3.9 5-6.4s-2.1-5.2-5-6.4z"/></svg>',
+  cap: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zm-7 8.32V16c0 1.66 3.13 3 7 3s7-1.34 7-3v-4.68l-7 3.82-7-3.82z"/></svg>',
+  poll: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 9h3v10H5zM10.5 4h3v15h-3zM16 12h3v7h-3z"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 15-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.48.11.7A5.98 5.98 0 0 1 15 13.06c.32.05.66.06 1 .03V11zm-7-6C7.34 5 6 6.34 6 8s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM16 13c-.35 0-.69-.03-1.02-.09A6.01 6.01 0 0 0 12 10a6 6 0 0 0-6 6v3h16v-3c0-1.66-2.69-3-6-3zm-7 0C5.69 13 0 14.34 0 16v3h4v-3c0-1.07.61-2.03 1.58-2.58C6.58 13.15 7.74 13 9 13z" transform="translate(1 1) scale(.92)"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.3 21 3 13.7 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>',
+  fb: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.55c0-.93.26-1.56 1.58-1.56h1.7V3.14c-.3-.04-1.31-.13-2.49-.13-2.47 0-4.16 1.5-4.16 4.26v2.33H7.38v3.2h2.75V21h3.37z"/></svg>',
+  wa: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 15.06L2 22l5.06-1.49A9.9 9.9 0 1 0 12.04 2zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-2.97.87.9-2.9-.2-.31a8.2 8.2 0 1 1 6.75 3.67zm4.5-6.14c-.25-.13-1.46-.72-1.69-.8-.22-.08-.39-.13-.55.12-.17.25-.63.8-.78.97-.14.16-.29.18-.54.06a6.7 6.7 0 0 1-3.36-2.93c-.25-.43.25-.4.72-1.33a.55.55 0 0 0-.03-.51c-.08-.13-.55-1.34-.76-1.83-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.25-.86.85-.86 2.1 0 1.24.9 2.44 1.03 2.6.12.17 1.78 2.72 4.31 3.81.6.26 1.07.42 1.44.53.6.19 1.15.17 1.59.1.48-.07 1.46-.6 1.67-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.29z"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>'
+};
+var AVATAR_SVG = '<svg viewBox="0 0 100 100" width="64" height="64" aria-hidden="true"><rect width="100" height="100" fill="#dbeafe"/><circle cx="50" cy="38" r="17" fill="#2563eb"/><path d="M18 88c4-19 17-27 32-27s28 8 32 27" fill="#2563eb"/></svg>';
+
+/* ---------- SHA-256 (native when available, JS fallback otherwise) ---------- */
+function sha256Fallback(ascii){
+  function rr(v,a){ return (v>>>a)|(v<<(32-a)); }
+  var maxWord = Math.pow(2,32), result = "", words = [], asciiBitLength = ascii.length*8;
+  var hash = sha256Fallback.h = sha256Fallback.h || [], k = sha256Fallback.k = sha256Fallback.k || [];
+  var primeCounter = k.length, isComposite = {};
+  for (var candidate = 2; primeCounter < 64; candidate++){
+    if (!isComposite[candidate]){
+      for (var i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+      hash[primeCounter] = (Math.pow(candidate,0.5)*maxWord)|0;
+      k[primeCounter++] = (Math.pow(candidate,1/3)*maxWord)|0;
+    }
+  }
+  ascii += "\x80";
+  while ((ascii.length % 64) - 56) ascii += "\x00";
+  for (var i2 = 0; i2 < ascii.length; i2++){
+    var j = ascii.charCodeAt(i2);
+    if (j >> 8) return sha256Fallback(unescape(encodeURIComponent(ascii)));
+    words[i2 >> 2] |= j << (((3 - i2) % 4) * 8);
+  }
+  words[words.length] = (asciiBitLength / maxWord)|0;
+  words[words.length] = asciiBitLength;
+  for (var j2 = 0; j2 < words.length;){
+    var w = words.slice(j2, (j2 += 16)), oldHash = hash;
+    hash = hash.slice(0,8);
+    for (var i3 = 0; i3 < 64; i3++){
+      var w15 = w[i3-15], w2 = w[i3-2], a = hash[0], e = hash[4];
+      var temp1 = hash[7] + (rr(e,6)^rr(e,11)^rr(e,25)) + ((e & hash[5]) ^ (~e & hash[6])) + k[i3]
+        + (w[i3] = i3 < 16 ? w[i3] : (w[i3-16] + (rr(w15,7)^rr(w15,18)^(w15>>>3)) + w[i3-7] + (rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+      var temp2 = (rr(a,2)^rr(a,13)^rr(a,22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(temp1+temp2)|0].concat(hash);
+      hash[4] = (hash[4] + temp1)|0;
+    }
+    for (var i4 = 0; i4 < 8; i4++) hash[i4] = (hash[i4] + oldHash[i4])|0;
+  }
+  for (var i5 = 0; i5 < 8; i5++){
+    for (var j3 = 3; j3 + 1; j3--){
+      var b = (hash[i5] >> (j3*8)) & 255;
+      result += (b < 16 ? "0" : "") + b.toString(16);
+    }
+  }
+  return result;
+}
+function sha256Hex(text){
+  if (window.crypto && crypto.subtle && crypto.subtle.digest && window.TextEncoder){
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)).then(function(digest){
+      return Array.prototype.map.call(new Uint8Array(digest), function(b){ return b.toString(16).padStart(2,"0"); }).join("");
+    }).catch(function(){ return sha256Fallback(text); });
+  }
+  return Promise.resolve(sha256Fallback(text));
+}
+
+/* ---------- Board data: the page fetches data.json fresh on every visit
+   (with a cache-buster, so nobody sees a stale copy). If that fetch fails —
+   offline, file missing — the embedded DEFAULT_* data below is shown
+   instead, so the board is never blank. The owner publishes updates from
+   the Admin panel: Publish writes the current data to data.json in the
+   board's GitHub repo, and every visitor then loads that same file.
+   Board data itself is never kept in browser storage; the only thing kept
+   there is the owner's GitHub token, on his phone only (see below). ------ */
+
+/* ---------- Input hardening: lengths, plain text, safe links ---------- */
+var LIMITS = { notice: 2000, subject: 120, examNotice: 1000, topic: 200, option: 120, name: 80, phone: 40, url: 500 };
+function cleanText(value, max){
+  var s = (value == null ? "" : String(value));
+  s = s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
+  if (max && s.length > max) s = s.slice(0, max);
+  return s;
+}
+/* Only real http(s) web links may become clickable. Anything else — empty,
+   "#", javascript:, data:, malformed — returns "" so no dead/blank link is made. */
+function safeUrl(value){
+  var s = cleanText(value, LIMITS.url).trim();
+  if (!s || s === "#") return "";
+  if (/^(javascript|data|vbscript|file|blob):/i.test(s)) return "";
+  if (/[\s"'<>\\]/.test(s)) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  return "";
+}
+/* Captain photos: safe web link or an uploaded data-image only. */
+function safeImg(value){
+  var s = cleanText(value, 300000).trim();
+  if (!s || s === "#") return "";
+  if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(s)) return s;
+  return safeUrl(s);
+}
+function validDateStr(s){
+  return /^\d{4}-\d{2}-\d{2}$/.test(s || "") ? s : "";
+}
+
+/* ---------- Data normalising: old or damaged saved data can never crash the board ---------- */
+function toId(v){ var n = Number(v); return isFinite(n) && n > 0 ? n : Date.now() + Math.floor(Math.random()*100000); }
+function normalizeNotices(list){
+  if (!Array.isArray(list)) return null;
+  return list.map(function(n){
+    if (!n || typeof n !== "object") return null;
+    var text = cleanText(n.text != null ? n.text : (n.content || n.title || ""), LIMITS.notice);
+    return { id: toId(n.id), text: text };
+  }).filter(function(n){ return n !== null; });
+}
+function normalizeExams(list){
+  if (!Array.isArray(list)) return null;
+  return list.map(function(x){
+    if (!x || typeof x !== "object") return null;
+    var examNotice = "";
+    if (x.examNotice != null) examNotice = x.examNotice;
+    else if (x.notice != null) examNotice = x.notice;
+    else if (x.chapter) examNotice = x.chapter;
+    return {
+      id: toId(x.id),
+      subject: cleanText(x.subject || "", LIMITS.subject),
+      date: validDateStr(cleanText(x.date || "", 20).trim()),
+      examNotice: cleanText(examNotice || "", LIMITS.examNotice)
+    };
+  }).filter(function(x){ return x !== null; });
+}
+function normalizePolls(list){
+  if (!Array.isArray(list)) return null;
+  return list.map(function(p){
+    if (!p || typeof p !== "object" || !Array.isArray(p.options)) return null;
+    var opts = p.options.slice(0, 8).map(function(o){
+      if (!o || typeof o !== "object") return null;
+      var v = parseInt(o.votes, 10);
+      return { name: cleanText(o.name || "", LIMITS.option), votes: isFinite(v) && v > 0 ? v : 0 };
+    }).filter(function(o){ return o !== null; });
+    if (opts.length < 2) return null;
+    return { id: toId(p.id), topic: cleanText(p.topic || "", LIMITS.topic), options: opts };
+  }).filter(function(p){ return p !== null; });
+}
+function normalizeCaptains(data, fallback){
+  if (!data || typeof data !== "object") return null;
+  function one(src, fb){
+    src = (src && typeof src === "object") ? src : {};
+    return {
+      name: cleanText(src.name != null ? src.name : fb.name, LIMITS.name),
+      phone: cleanText(src.phone != null ? src.phone : fb.phone, LIMITS.phone),
+      fb: cleanText(src.fb != null ? src.fb : fb.fb, LIMITS.url),
+      wa: cleanText(src.wa != null ? src.wa : fb.wa, LIMITS.url),
+      img: typeof src.img === "string" ? src.img : fb.img
+    };
+  }
+  return { captain: one(data.captain, fallback.captain), viceCaptain: one(data.viceCaptain, fallback.viceCaptain) };
+}
+
+function getDaysLeft(dateStr){
+  if (!dateStr) return null;
+  var parts = String(dateStr).trim().split("-");
+  var y, m, d;
+  if (parts.length === 3){
+    y = parseInt(parts[0],10); m = parseInt(parts[1],10)-1; d = parseInt(parts[2],10);
+  } else {
+    var parsed = new Date(dateStr);
+    if (isNaN(parsed.getTime())) return null;
+    y = parsed.getFullYear(); m = parsed.getMonth(); d = parsed.getDate();
+  }
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+  var examDay = new Date(y, m, d), now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((examDay - today) / 86400000);
+}
+function countdownLabel(days){
+  if (days === null) return "";
+  if (days < 0) return "Expire";
+  return days + "D";
+}
+function countdownClass(days){
+  if (days === null) return "countdown-badge countdown-normal";
+  if (days === 0) return "countdown-badge countdown-today";
+  if (days > 0 && days <= 2) return "countdown-badge countdown-soon";
+  if (days < 0) return "countdown-badge countdown-past";
+  return "countdown-badge countdown-normal";
+}
+
+/* ---------- Defaults (identical to the board's existing content) ---------- */
+var DEFAULT_NOTICES = [{ id: 1, text: "Final semester routine is out." }];
+var DEFAULT_EXAMS = [{ id: 1, subject: "Math", date: "2026-11-20", examNotice: "Math exam somporke: Chapter 3 valo kore pore asba." }];
+var DEFAULT_POLLS = [{ id: 1, topic: "Next Class Test Topic?", options: [{ name: "Chapter 1", votes: 0 }, { name: "Chapter 2", votes: 0 }] }];
+var DEFAULT_CAPTAINS = {
+  captain: { name: "Waliur Rahman", phone: "01XXXXXXXXX", fb: "#", wa: "#", img: "https://via.placeholder.com/100" },
+  viceCaptain: { name: "Vice Captain", phone: "01XXXXXXXXX", fb: "#", wa: "#", img: "https://via.placeholder.com/100" }
+};
+
+/* ---------- Tiny DOM helpers — user text is only ever set as text, never as HTML ---------- */
+function el(tag, cls, text){
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+function iconSpan(boxCls, svg){
+  var s = el("span", "icon-box " + boxCls);
+  s.innerHTML = svg; /* fixed icon markup defined above — never user input */
+  return s;
+}
+function sectionTitle(iconCls, svg, text, textColor){
+  var h = el("h2", "section-title");
+  if (textColor) h.style.color = textColor;
+  h.appendChild(iconSpan(iconCls, svg));
+  h.appendChild(document.createTextNode(text));
+  return h;
+}
+function field(labelText, input){
+  var wrap = el("div", "field");
+  var l = el("label", null, labelText);
+  l.htmlFor = input.id;
+  wrap.appendChild(l);
+  wrap.appendChild(input);
+  return wrap;
+}
+var uidCounter = 0;
+function textInput(value, placeholder, max){
+  uidCounter++;
+  var i = document.createElement("input");
+  i.type = "text"; i.className = "admin-input"; i.id = "f" + uidCounter;
+  i.value = value || "";
+  if (placeholder) i.placeholder = placeholder;
+  if (max) i.maxLength = max;
+  i.setAttribute("autocomplete", "off");
+  return i;
+}
+function areaInput(value, rows, placeholder, max){
+  uidCounter++;
+  var t = document.createElement("textarea");
+  t.className = "admin-input"; t.id = "f" + uidCounter; t.rows = rows;
+  t.value = value || "";
+  if (placeholder) t.placeholder = placeholder;
+  if (max) t.maxLength = max;
+  return t;
+}
+function dateInput(value){
+  uidCounter++;
+  var i = document.createElement("input");
+  i.type = "date"; i.className = "admin-input"; i.id = "f" + uidCounter;
+  i.value = validDateStr(value || "");
+  return i;
+}
+function btn(text, cls, onClick){
+  var b = el("button", cls, text);
+  b.type = "button";
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+/* ---------- App state ---------- */
+var wantsAdminFromUrl = false;
+try {
+  var qs = window.location.search || "";
+  var hs = window.location.hash || "";
+  wantsAdminFromUrl = /[?&]admin(?:[=&]|$)/.test(qs) || qs === "?admin" || hs === "#admin";
+} catch (e) { wantsAdminFromUrl = false; }
+var state = {
+  isAdmin: false,
+  showLogin: wantsAdminFromUrl,
+  loginMessage: "",
+  loginOk: false,
+  openExams: {},
+  notices: JSON.parse(JSON.stringify(DEFAULT_NOTICES)),
+  exams: JSON.parse(JSON.stringify(DEFAULT_EXAMS)),
+  polls: JSON.parse(JSON.stringify(DEFAULT_POLLS)),
+  captains: JSON.parse(JSON.stringify(DEFAULT_CAPTAINS)),
+  ghToken: "",
+  dataLoaded: false,
+  lastLoadedJson: "",
+  votedLocally: false,
+  publishing: false,
+  publishOk: false,
+  publishStatus: "",
+  editingNoticeId: null,
+  editingExamId: null,
+  pollMessage: ""
+};
+var formRefs = {}; /* live admin form inputs, read on demand so re-renders never wipe typing */
+/* Admin verifier: the password itself is never stored. What is stored is a
+   salted SHA-256 hash repeated 50,000 times, so copying this value from the
+   page source does not give anyone the password, and testing guesses against
+   it offline is 50,000x slower than against a plain hash. Combined with the
+   in-page lockout below, guessing is impractical. (A fully server-side login
+   is impossible on a static page; do not reuse this password anywhere else.) */
+var ADMIN_VERIFIER = {
+  salt: "cnb-board-salt-2026-v2",
+  rounds: 50000,
+  hash: "852aa6dad65e229f2616ad632d8b47d2f130519b7cfeea471cc6a01552818517"
+};
+function verifyAdminPassword(pw){
+  var h = sha256Fallback(ADMIN_VERIFIER.salt + ":" + pw);
+  for (var i = 1; i < ADMIN_VERIFIER.rounds; i++){
+    h = sha256Fallback(h + ":" + ADMIN_VERIFIER.salt);
+  }
+  return h;
+}
+
+/* ---------- Board data loading — ONE source of truth: data.json in the
+   board's GitHub repo. Every visitor's page reads that file DIRECTLY from
+   GitHub (Contents API, raw), so the moment the owner publishes, the new
+   data is what every phone gets — no waiting for the GitHub Pages site to
+   rebuild, and no stale cached copy of the page's own data.json. If the
+   GitHub read fails (offline, rate limit), the page falls back to the
+   data.json sitting next to it (the GitHub Pages copy), then to the
+   embedded DEFAULT_* values, so the board is never blank. Loading repeats
+   every few minutes, so a page left open picks up new data by itself —
+   but ONLY data actually published to the repo ever appears; nothing on
+   the board changes on its own. --------------------------------------- */
+function canonicalJson(value){
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
+  var keys = Object.keys(value).sort();
+  return "{" + keys.map(function(k){ return JSON.stringify(k) + ":" + canonicalJson(value[k]); }).join(",") + "}";
+}
+function boardDataFromRaw(data){
+  if (!data || typeof data !== "object") return null;
+  return {
+    notices: normalizeNotices(data.notices) || state.notices,
+    exams: normalizeExams(data.exams) || state.exams,
+    polls: normalizePolls(data.polls) || state.polls,
+    captains: normalizeCaptains(data.captains, DEFAULT_CAPTAINS) || state.captains
+  };
+}
+function applyBoardData(data){
+  var next = boardDataFromRaw(data);
+  if (!next) return false;
+  state.dataLoaded = true; /* a live copy of the board data has been seen */
+  /* lastLoadedJson always tracks the data exactly as it exists in the
+     repo — computed BEFORE the local vote merge below, so this phone's
+     own unpublished votes never make the publish safety check think the
+     repo holds unseen data. */
+  var repoJson = canonicalJson(next);
+  if (state.votedLocally){
+    /* Votes live only on this phone — keep this phone's own taps when
+       fresher board data arrives, instead of wiping them back to the
+       published counts. */
+    next.polls = next.polls.map(function(p){
+      var local = null;
+      state.polls.forEach(function(lp){ if (lp.id === p.id) local = lp; });
+      if (!local) return p;
+      return { id: p.id, topic: p.topic, options: p.options.map(function(o, idx){
+        var lv = local.options[idx] ? local.options[idx].votes : 0;
+        return { name: o.name, votes: Math.max(o.votes, lv) };
+      }) };
+    });
+  }
+  if (repoJson === canonicalJson(boardDataObject())){
+    state.lastLoadedJson = repoJson;
+    return false; /* already showing exactly this — nothing to do */
+  }
+  /* The owner is in the Admin panel with changes that differ from the last
+     loaded data: never overwrite his unsaved edits with fetched data. */
+  if (state.isAdmin && canonicalJson(boardDataObject()) !== state.lastLoadedJson) return false;
+  state.notices = next.notices;
+  state.exams = next.exams;
+  state.polls = next.polls;
+  state.captains = next.captains;
+  state.lastLoadedJson = repoJson;
+  return true;
+}
+function fetchWithTimeout(url, opts, ms){
+  opts = opts || {};
+  if (window.AbortController){
+    var ctrl = new AbortController();
+    opts.signal = ctrl.signal;
+    var timer = setTimeout(function(){ try { ctrl.abort(); } catch (e) {} }, ms || 8000);
+    return fetch(url, opts).then(function(res){ clearTimeout(timer); return res; }, function(err){ clearTimeout(timer); throw err; });
+  }
+  return fetch(url, opts);
+}
+function fetchJsonFresh(url){
+  return fetchWithTimeout(url, { cache: "no-store" }).then(function(res){
+    if (!res.ok) throw new Error("http " + res.status);
+    return res.json();
+  });
+}
+function fetchGitHubData(){
+  /* Public repo — reading needs no token. The Contents API reflects a new
+     commit immediately, unlike the Pages site, which rebuilds behind it. */
+  var url = "https://api.github.com/repos/" + GH_REPO + "/contents/data.json?ref=main";
+  return fetchWithTimeout(url, { cache: "no-store", headers: { "Accept": "application/vnd.github.raw+json" } }).then(function(res){
+    if (!res.ok) throw new Error("http " + res.status);
+    return res.json();
+  });
+}
+function loadBoardData(){
+  var bust = "?_=" + Date.now();
+  var sources = [
+    function(){ return fetchGitHubData(); },
+    function(){ return fetchJsonFresh("data.json" + bust); },
+    function(){ return fetchJsonFresh("data:application/json;base64,eyJjYXB0YWlucyI6eyJjYXB0YWluIjp7ImZiIjoiIyIsImltZyI6Imh0dHBzOi8vdmlhLnBsYWNlaG9sZGVyLmNvbS8xMDAiLCJuYW1lIjoiV2FsaXVyIFJhaG1hbiIsInBob25lIjoiMDFYWFhYWFhYWFgiLCJ3YSI6IiMifSwidmljZUNhcHRhaW4iOnsiZmIiOiIjIiwiaW1nIjoiaHR0cHM6Ly92aWEucGxhY2Vob2xkZXIuY29tLzEwMCIsIm5hbWUiOiJWaWNlIENhcHRhaW4iLCJwaG9uZSI6IjAxWFhYWFhYWFhYIiwid2EiOiIjIn19LCJleGFtcyI6W3siZGF0ZSI6IjIwMjYtMTEtMjAiLCJleGFtTm90aWNlIjoiTWF0aCBleGFtIHNvbXBvcmtlOiBDaGFwdGVyIDMgdmFsbyBrb3JlIHBvcmUgYXNiYS4iLCJpZCI6MSwic3ViamVjdCI6Ik1hdGgifV0sIm5vdGljZXMiOlt7ImlkIjoxLCJ0ZXh0IjoiRmluYWwgc2VtZXN0ZXIgcm91dGluZSBpcyBvdXQuIn1dLCJwb2xscyI6W3siaWQiOjEsIm9wdGlvbnMiOlt7Im5hbWUiOiJDaGFwdGVyIDEiLCJ2b3RlcyI6MH0seyJuYW1lIjoiQ2hhcHRlciAyIiwidm90ZXMiOjB9XSwidG9waWMiOiJOZXh0IENsYXNzIFRlc3QgVG9waWM/In1dfQ==" + bust); }
+  ];
+  var i = 0;
+  function next(){
+    if (i >= sources.length) return; /* all failed — current data stays; the periodic reload retries */
+    sources[i++]().then(function(data){
+      if (!boardDataFromRaw(data)){ next(); return; }
+      if (applyBoardData(data)) render();
+    }).catch(function(){ next(); });
+  }
+  next();
+}
+
+/* ---------- GitHub publish: the owner publishes updates himself.
+   The token is kept ONLY in this phone's own browser storage — never in
+   this page, never in the repo. Board data is never kept in browser
+   storage. Publishing writes the current board data (including Admin
+   edits) to data.json in the board's repo via the GitHub Contents API. -- */
+var GH_REPO = "waliurrahm194984/waliur.rahman";
+var GH_TOKEN_KEY = "cnb_github_token";
+function getGhToken(){
+  try {
+    var saved = window.localStorage.getItem(GH_TOKEN_KEY);
+    if (saved) return saved;
+  } catch (e) {}
+  return state.ghToken || "";
+}
+function saveGhToken(value){
+  state.ghToken = value;
+  try { window.localStorage.setItem(GH_TOKEN_KEY, value); } catch (e) {}
+}
+function boardDataObject(){
+  return {
+    notices: state.notices,
+    exams: state.exams,
+    polls: state.polls,
+    captains: state.captains
+  };
+}
+function utf8ToBase64(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function b64ToUtf8(b64){
+  try { return decodeURIComponent(escape(atob(String(b64 || "").replace(/\s/g, "")))); }
+  catch (e) { return ""; }
+}
+function ghError(kind, status){
+  var err = new Error(kind);
+  err.status = status || 0;
+  return err;
+}
+function publishToGitHub(){
+  if (state.publishing) return;
+  var token = (getGhToken() || "").trim();
+  if (!token){
+    state.publishOk = false;
+    state.publishStatus = "Token পাওয়া যায়নি — নিচের ঘরে GitHub Token টি বসান, তারপর আবার Publish চাপ দিন।";
+    render();
+    return;
+  }
+  if (!state.dataLoaded){
+    /* No live data was ever loaded on this phone, so the panel is showing
+       the page's built-in copy. Publishing now would push that old copy
+       over everyone's board — the exact "সবাই পুরোনোটাই দেখে" bug. Block
+       it and say why, instead of silently writing stale data. */
+    state.publishOk = false;
+    state.publishStatus = "Live data এখনো load হয়নি — ইন্টারনেট চালু করে page টা reload করুন, board এর তথ্য আসার পর আবার Publish চাপ দিন। (পুরোনো তথ্য দিয়ে সবার board মুছে যাওয়া ঠেকাতে Publish আটকানো হলো।)";
+    render();
+    return;
+  }
+  state.publishing = true;
+  state.publishOk = true;
+  state.publishStatus = "Publishing… একটু অপেক্ষা করুন।";
+  render();
+  var apiUrl = "https://api.github.com/repos/" + GH_REPO + "/contents/data.json";
+  var headers = {
+    "Authorization": "Bearer " + token,
+    "Accept": "application/vnd.github+json",
+    "Content-Type": "application/json"
+  };
+  var sentJson = canonicalJson(boardDataFromRaw(boardDataObject()));
+  function fail(msg){
+    state.publishing = false;
+    state.publishOk = false;
+    state.publishStatus = msg;
+    render();
+  }
+  function getCurrent(){
+    return fetchWithTimeout(apiUrl + "?ref=main", { headers: headers, cache: "no-store" }).then(function(res){
+      if (res.status === 404) return null; /* data.json not in the repo yet — it will be created */
+      if (res.status === 401) throw ghError("badtoken", 401);
+      if (res.status === 403) throw ghError("noperm", 403);
+      if (!res.ok) throw ghError("http", res.status);
+      return res.json();
+    });
+  }
+  function putCurrent(current){
+    var body = {
+      message: "Board update from Admin panel",
+      content: utf8ToBase64(JSON.stringify(boardDataObject(), null, 2)),
+      branch: "main"
+    };
+    if (current && current.sha) body.sha = current.sha;
+    return fetchWithTimeout(apiUrl, { method: "PUT", headers: headers, body: JSON.stringify(body) }, 15000).then(function(res){
+      if (res.status === 401) throw ghError("badtoken", 401);
+      if (res.status === 403) throw ghError("noperm", 403);
+      if (res.status === 409 || res.status === 422) throw ghError("conflict", res.status);
+      if (!res.ok) throw ghError("http", res.status);
+      return res;
+    });
+  }
+  getCurrent().then(function(current){
+    if (current && current.content){
+      /* Safety check: if the repo holds board data this phone has never
+         loaded (e.g. the page was opened offline and Admin was used before
+         the live data arrived), publishing would erase it for everyone.
+         Refuse, and tell the owner to reload first. */
+      var remote = null;
+      try { remote = JSON.parse(b64ToUtf8(current.content)); } catch (e) { remote = null; }
+      var remoteBoard = boardDataFromRaw(remote);
+      if (remoteBoard){
+        var remoteJson = canonicalJson(remoteBoard);
+        if (remoteJson !== state.lastLoadedJson && remoteJson !== sentJson){
+          state.publishing = false;
+          state.publishOk = false;
+          state.publishStatus = "Publish আটকানো হলো: GitHub-এ এমন তথ্য আছে যা এই ফোনে load হয়নি। Page টা reload করে live তথ্য আসার পর আবার edit করে Publish করুন — নাহলে সেই তথ্য মুছে যেত।";
+          render();
+          return null;
+        }
+      }
+    }
+    return putCurrent(current).catch(function(err){
+      if (err && err.message === "conflict"){
+        /* Someone/something updated the file in between — take the fresh
+           sha and write once more. */
+        return getCurrent().then(putCurrent);
+      }
+      throw err;
+    });
+  }).then(function(done){
+    if (done === null) return; /* safety check above already reported */
+    /* Verify before celebrating: read the file straight back from GitHub
+       and confirm it now holds exactly what was sent. */
+    return fetchWithTimeout(apiUrl + "?ref=main", { cache: "no-store", headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github.raw+json" } }).then(function(res){
+      if (!res.ok) throw ghError("http", res.status);
+      return res.json();
+    }).then(function(saved){
+      var savedBoard = boardDataFromRaw(saved);
+      state.publishing = false;
+      if (savedBoard && canonicalJson(savedBoard) === sentJson){
+        state.publishOk = true;
+        state.lastLoadedJson = sentJson;
+        state.publishStatus = "Published! যাচাই করা হয়েছে — তথ্য GitHub-এ সেভ হয়েছে। এখন সবাই link খুললেই নতুন তথ্য দেখবে, আর যাদের page খোলা আছে তাদের কাছেও কয়েক মিনিটে পৌঁছে যাবে।";
+      } else {
+        state.publishOk = false;
+        state.publishStatus = "Publish পাঠানো হয়েছে, কিন্তু GitHub-এ যাচাই করা যায়নি। একটু পরে link টা খুলে দেখুন নতুন তথ্য এসেছে কিনা।";
+      }
+      render();
+    }).catch(function(){
+      state.publishing = false;
+      state.publishOk = false;
+      state.publishStatus = "Publish পাঠানো হয়েছে, কিন্তু GitHub-এ যাচাই করা যায়নি। একটু পরে link টা খুলে দেখুন নতুন তথ্য এসেছে কিনা।";
+      render();
+    });
+  }).catch(function(err){
+    if (err && err.message === "badtoken"){
+      fail("Token টি GitHub মানছে না (401) — token টি ভুল বা মেয়াদ শেষ। Token এর ঘরে ঠিক token টি আবার বসান।");
+    } else if (err && err.message === "noperm"){
+      fail("Token দিয়ে এই repo-তে লেখা যাচ্ছে না (403) — token টিতে waliur.rahman repo-র Contents Read and write অনুমতি থাকতে হবে।");
+    } else if (err && err.message === "conflict"){
+      fail("দুইবার চেষ্টা করেও file টি আটকে গেছে (conflict)। এক মিনিট পরে আবার Publish চাপ দিন।");
+    } else if (err && err.message === "http"){
+      fail("Publish হয়নি — GitHub উত্তর দিয়েছে (HTTP " + (err.status || "?") + ")। ইন্টারনেট চেক করে আবার চেষ্টা করুন।");
+    } else {
+      fail("Publish হয়নি — ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।");
+    }
+  });
+}
+function renderPublishSection(){
+  var sec = adminSection(ICONS.shield, "Publish");
+  var box = el("div", "publish-box");
+  box.appendChild(el("p", null, "GitHub Token টি শুধু এই ফোনের ব্রাউজারেই থাকবে — পেজে বা GitHub-এ যাবে না। এই token দিয়ে শুধু এই বোর্ডের repo-তেই আপডেট করা যাবে। Token একবার বসালেই হবে, প্রতিবার লাগবে না।"));
+  var tokenInput = document.createElement("input");
+  uidCounter++;
+  tokenInput.type = "password";
+  tokenInput.className = "admin-input";
+  tokenInput.id = "f" + uidCounter;
+  tokenInput.placeholder = "GitHub Token এখানে বসান";
+  tokenInput.maxLength = 300;
+  tokenInput.setAttribute("autocomplete", "off");
+  tokenInput.value = getGhToken();
+  formRefs.ghToken = tokenInput;
+  tokenInput.addEventListener("input", function(){ saveGhToken(tokenInput.value); });
+  box.appendChild(field("GitHub Token (একবারই বসাতে হবে)", tokenInput));
+  var row = el("div", "btn-row");
+  var publishBtn = btn(state.publishing ? "Publishing…" : "Publish", "btn btn-green", publishToGitHub);
+  if (state.publishing){ publishBtn.disabled = true; publishBtn.style.opacity = ".6"; }
+  row.appendChild(publishBtn);
+  box.appendChild(row);
+  box.appendChild(el("p", "tiny-note", "Publish চাপ দিলে উপরের সব বদলানো তথ্য data.json হিসেবে GitHub-এ সেভ হয়ে যাবে — তারপর সবার ফোনেই নতুন তথ্য দেখাবে।"));
+  if (state.publishStatus){
+    var st = el("p", "publish-status msg " + (state.publishOk ? "msg-ok" : "msg-err"), state.publishStatus);
+    st.setAttribute("role", "status");
+    box.appendChild(st);
+  }
+  sec.appendChild(box);
+  return sec;
+}
+
+/* Admin hardening: brute-force lockout + automatic logout.
+   The lockout timer lives in this page session only; the password itself is
+   never stored anywhere — only its SHA-256 hash is compared. */
+var loginGuard = { fails: 0, lockUntil: 0, lockTimer: null };
+var MAX_FAILS = 5, LOCK_MS = 60000, ADMIN_SESSION_MS = 20 * 60 * 1000;
+var adminTimer = null;
+function armAdminTimer(){
+  if (adminTimer) clearTimeout(adminTimer);
+  adminTimer = setTimeout(function(){
+    if (state.isAdmin){ state.isAdmin = false; state.loginMessage = ""; state.loginOk = false; state.editingNoticeId = null; state.editingExamId = null; render(); }
+  }, ADMIN_SESSION_MS);
+}
+function resetLoginLock(){
+  if (state.loginMessage && !state.loginOk && loginGuard.lockUntil > Date.now()){
+    render();
+  }
+}
+
+/* ---------- Rendering ---------- */
+var root = document.getElementById("root");
+
+function render(){
+  formRefs = {};
+  uidCounter = 0; /* deterministic field ids per render, so focus restore after a re-render works */
+  var wrap = el("div", "wrap");
+  wrap.appendChild(renderHeader());
+  if (state.showLogin && !state.isAdmin) wrap.appendChild(renderLogin());
+  if (state.isAdmin && state.loginMessage) wrap.appendChild(renderGranted());
+  if (state.isAdmin) wrap.appendChild(renderAdminPanel());
+  wrap.appendChild(renderNotices());
+  wrap.appendChild(renderExams());
+  wrap.appendChild(renderVoting());
+  wrap.appendChild(renderCaptains());
+  var footer = el("div", "footer");
+  footer.appendChild(el("div", "line"));
+  var credit = el("p", null, "Developed By Waliur");
+  credit.id = "dev-credit";
+  credit.setAttribute("role", "button");
+  credit.tabIndex = 0;
+  credit.setAttribute("aria-label", "Developed By Waliur");
+  credit.style.cursor = "pointer";
+  credit.style.userSelect = "none";
+  credit.style.webkitUserSelect = "none";
+  credit.style.touchAction = "manipulation";
+  credit.addEventListener("click", handleFooterCreditTap);
+  credit.addEventListener("keydown", function(ev){
+    if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); handleFooterCreditTap(); }
+  });
+  footer.appendChild(credit);
+  wrap.appendChild(footer);
+  root.innerHTML = "";
+  root.appendChild(wrap);
+}
+
+function renderHeader(){
+  var head = el("div", "panel site-header");
+  var left = el("div");
+  left.style.minWidth = "0"; left.style.flex = "1";
+  var h1 = el("h1");
+  h1.appendChild(document.createTextNode("Notice "));
+  var acc = el("span", "accent", "Board");
+  h1.appendChild(acc);
+  left.appendChild(h1);
+  left.appendChild(el("span", "dept-pill", "Department of mechanical"));
+  head.appendChild(left);
+  /* No visible Admin button: the login is hidden from the public board.
+     Only the owner can open it — tap the "Develop by waliur" footer
+     credit 5 times quickly, or open the page with ?admin at the end of
+     the link. When logged in, Logout still shows here as normal. */
+  if (state.isAdmin){
+    head.appendChild(btn("Logout", "btn btn-logout", handleLogout));
+  }
+  return head;
+}
+
+function renderLogin(){
+  var panel = el("div", "panel");
+  panel.style.padding = "18px 20px";
+  var form = document.createElement("form");
+  form.className = "login-row";
+  form.setAttribute("autocomplete", "off");
+  var input = document.createElement("input");
+  input.type = "password";
+  input.className = "admin-input";
+  input.placeholder = "Enter Admin Password";
+  input.maxLength = 128;
+  input.setAttribute("autocomplete", "current-password");
+  formRefs.password = input;
+  form.appendChild(input);
+  var locked = loginGuard.lockUntil > Date.now();
+  var submit = el("button", "btn btn-primary", locked ? "Locked…" : "Login");
+  submit.type = "submit";
+  submit.disabled = locked;
+  if (locked) submit.style.opacity = ".6";
+  form.appendChild(submit);
+  form.addEventListener("submit", handleLogin);
+  panel.appendChild(form);
+  if (state.loginMessage){
+    var msg = el("p", "msg " + (state.loginOk ? "msg-ok" : "msg-err"), state.loginMessage);
+    msg.setAttribute("role", "status");
+    panel.appendChild(msg);
+  }
+  return panel;
+}
+
+function renderGranted(){
+  var panel = el("div", "panel granted");
+  var p = el("p", null, state.loginMessage);
+  p.setAttribute("role", "status");
+  panel.appendChild(p);
+  var x = btn("×", "dismiss", function(){ state.loginMessage = ""; render(); });
+  x.setAttribute("aria-label", "Dismiss");
+  panel.appendChild(x);
+  return panel;
+}
+
+function handleLogin(ev){
+  if (ev) ev.preventDefault();
+  var now = Date.now();
+  if (loginGuard.lockUntil > now){
+    state.loginOk = false;
+    state.loginMessage = "Too many wrong tries. Try again in " + Math.ceil((loginGuard.lockUntil - now) / 1000) + "s.";
+    render();
+    return;
+  }
+  var input = formRefs.password;
+  var pw = input ? input.value : "";
+  var submitBtn = input && input.form ? input.form.querySelector('button[type="submit"]') : null;
+  if (submitBtn){ submitBtn.disabled = true; submitBtn.textContent = "Checking…"; }
+  /* Let the "Checking…" label paint before the (deliberately slow) verify runs. */
+  setTimeout(function(){
+    var matched = false;
+    try {
+      var hash = verifyAdminPassword(pw);
+      /* Compare without early exit so timing does not reveal the verifier. */
+      var diff = hash.length ^ ADMIN_VERIFIER.hash.length;
+      var len = Math.max(hash.length, ADMIN_VERIFIER.hash.length);
+      for (var i = 0; i < len; i++){
+        diff |= (hash.charCodeAt(i) || 0) ^ (ADMIN_VERIFIER.hash.charCodeAt(i) || 0);
+      }
+      matched = diff === 0;
+    } catch (err) { matched = false; }
+    if (matched){
+      loginGuard.fails = 0; loginGuard.lockUntil = 0;
+      state.isAdmin = true;
+      state.showLogin = false;
+      state.loginOk = true;
+      state.loginMessage = "Admin Access Granted!";
+      armAdminTimer();
+    } else {
+      loginGuard.fails++;
+      state.loginOk = false;
+      if (loginGuard.fails >= MAX_FAILS){
+        loginGuard.lockUntil = Date.now() + LOCK_MS;
+        loginGuard.fails = 0;
+        state.loginMessage = "Too many wrong tries. Locked for 60 seconds.";
+        if (loginGuard.lockTimer) clearTimeout(loginGuard.lockTimer);
+        loginGuard.lockTimer = setTimeout(resetLoginLock, LOCK_MS + 300);
+      } else {
+        state.loginMessage = "Wrong Password!";
+      }
+    }
+    render();
+  }, 30);
+}
+function handleLogout(){
+  state.isAdmin = false;
+  state.loginMessage = "";
+  state.loginOk = false;
+  state.showLogin = false;
+  state.editingNoticeId = null;
+  state.editingExamId = null;
+  if (adminTimer) clearTimeout(adminTimer);
+  render();
+}
+/* Secret owner entry: tap the "Develop by waliur" footer credit 5 times
+   within 2.5 seconds to open (or close) the hidden Admin login. Nothing on
+   the public board hints that this exists. */
+var footerTapTimes = [];
+function handleFooterCreditTap(){
+  if (state.isAdmin) return;
+  var now = Date.now();
+  footerTapTimes = footerTapTimes.filter(function(t){ return now - t < 2500; });
+  footerTapTimes.push(now);
+  if (footerTapTimes.length >= 5){
+    footerTapTimes = [];
+    state.showLogin = !state.showLogin;
+    if (!state.showLogin) state.loginMessage = "";
+    render();
+    if (state.showLogin){
+      try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) { window.scrollTo(0, 0); }
+      var pw = formRefs.password;
+      if (pw){ try { pw.focus({ preventScroll: true }); } catch (e) { try { pw.focus(); } catch (e2) {} } }
+    }
+  }
+}
+
+/* ---------- Sections: 1. Notices (only the notice text) ---------- */
+function renderNotices(){
+  var panel = el("div", "panel blue-panel");
+  panel.appendChild(sectionTitle("icon-blue", ICONS.horn, "Notices", "#1d4ed8"));
+  var stack = el("div", "stack");
+  if (state.notices.length === 0){
+    stack.appendChild(el("p", "empty", "No notices yet."));
+  }
+  state.notices.forEach(function(notice){
+    var card = el("div", "notice-card");
+    card.appendChild(el("p", "wrap-text", notice.text));
+    stack.appendChild(card);
+  });
+  panel.appendChild(stack);
+  return panel;
+}
+
+/* ---------- Sections: 2. Upcoming Exams (countdown + tap for one exam notice) ---------- */
+function renderExams(){
+  var panel = el("div", "panel");
+  panel.appendChild(sectionTitle("icon-orange", ICONS.cap, "Upcoming Exams", ""));
+  var stack = el("div", "stack");
+  if (state.exams.length === 0){
+    stack.appendChild(el("p", "empty", "No exams scheduled yet."));
+  }
+  state.exams.forEach(function(exam){
+    var days = getDaysLeft(exam.date);
+    var isToday = days === 0;
+    var open = !!state.openExams[exam.id];
+    var card = el("div", "exam-card" + (isToday ? " exam-today" : "") + (open ? " open" : ""));
+    var head = el("button", "exam-head");
+    head.type = "button";
+    head.setAttribute("aria-expanded", open ? "true" : "false");
+    var dot = el("span", isToday ? "today-dot" : (days !== null && days > 0 && days <= 2 ? "soon-dot" : "normal-dot"));
+    if (isToday) dot.setAttribute("aria-label", "Exam today");
+    head.appendChild(dot);
+    var subj = el("span", "subject wrap-text");
+    subj.appendChild(document.createTextNode(exam.subject));
+    if (exam.date){
+      var sep = el("span", "sep", "—");
+      var date = el("span", "date", exam.date);
+      subj.appendChild(document.createTextNode(" "));
+      subj.appendChild(sep);
+      subj.appendChild(document.createTextNode(" "));
+      subj.appendChild(date);
+    }
+    head.appendChild(subj);
+    var right = el("span", "right");
+    if (days !== null) right.appendChild(el("span", countdownClass(days), countdownLabel(days)));
+    var chev = el("span", "chev");
+    chev.innerHTML = ICONS.chev; /* fixed icon markup */
+    right.appendChild(chev);
+    head.appendChild(right);
+    head.addEventListener("click", function(){
+      state.openExams[exam.id] = !state.openExams[exam.id];
+      render();
+    });
+    card.appendChild(head);
+    var body = el("div", "exam-body");
+    var box = el("div", "exam-notice-box");
+    box.appendChild(el("p", "label", "Exam Notice"));
+    box.appendChild(el("p", "wrap-text", exam.examNotice ? exam.examNotice : "Ei exam somporke ekhono kono notice dewa hoy ni."));
+    if (isToday){
+      var line = el("p", "today-line");
+      var d2 = el("span", "today-dot");
+      d2.style.width = "10px"; d2.style.height = "10px"; d2.style.marginTop = "0";
+      line.appendChild(d2);
+      line.appendChild(document.createTextNode("Ajkei exam — 0D!"));
+      box.appendChild(line);
+    }
+    body.appendChild(box);
+    card.appendChild(body);
+    stack.appendChild(card);
+  });
+  panel.appendChild(stack);
+  panel.appendChild(el("p", "hint", "Tap an exam to see its notice."));
+  return panel;
+}
+
+/* ---------- Sections: 3. Live Voting ---------- */
+function renderVoting(){
+  var panel = el("div", "panel");
+  var title = sectionTitle("icon-green", ICONS.poll, "Live Voting", "#15803d");
+  title.appendChild(el("span", "live-dot"));
+  panel.appendChild(title);
+  var stack = el("div", "stack-lg");
+  if (state.polls.length === 0){
+    stack.appendChild(el("p", "empty", "No votes running right now."));
+  }
+  state.polls.forEach(function(poll){
+    var card = el("div", "poll-card");
+    card.appendChild(el("h3", "wrap-text", poll.topic));
+    var opts = el("div", "stack");
+    poll.options.forEach(function(opt, i){
+      var b = el("button", "vote-btn");
+      b.type = "button";
+      b.appendChild(el("span", "opt wrap-text", opt.name));
+      b.appendChild(el("span", "count", opt.votes + " Votes"));
+      b.addEventListener("click", function(){
+        poll.options[i].votes++;
+        state.votedLocally = true;
+        render();
+      });
+      opts.appendChild(b);
+    });
+    card.appendChild(opts);
+    if (state.isAdmin){
+      var row = el("div", "btn-row");
+      row.style.marginTop = "12px";
+      row.appendChild(btn("Reset Votes", "btn btn-amber btn-sm", function(){
+        poll.options.forEach(function(o){ o.votes = 0; });
+        render();
+      }));
+      row.appendChild(btn("Delete Vote", "btn btn-logout btn-sm", function(){
+        state.polls = state.polls.filter(function(p){ return p.id !== poll.id; });
+        render();
+      }));
+      card.appendChild(row);
+    }
+    stack.appendChild(card);
+  });
+  panel.appendChild(stack);
+  return panel;
+}
+
+/* ---------- Sections: 4. Class Representative ---------- */
+function socialOverlayIcon(url, cls, svg, label){
+  var safe = safeUrl(url);
+  if (!safe){
+    /* No real link set yet: the icon still shows on the photo, but tapping
+       it does nothing — no href, no navigation, no blank white page. */
+    var off = el("button", "social-overlay-btn " + cls + " is-off");
+    off.type = "button";
+    off.setAttribute("aria-label", label);
+    off.innerHTML = svg; /* fixed icon markup */
+    off.addEventListener("click", function(ev){ ev.preventDefault(); ev.stopPropagation(); });
+    return off;
+  }
+  var a = document.createElement("a");
+  a.className = "social-overlay-btn " + cls;
+  a.href = safe;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.setAttribute("aria-label", label);
+  a.innerHTML = svg; /* fixed icon markup */
+  a.addEventListener("click", function(ev){ ev.stopPropagation(); });
+  return a;
+}
+function renderCaptains(){
+  var grid = el("div", "captains");
+  [["captain", "Class Captain"], ["viceCaptain", "Vice Captain"]].forEach(function(pair){
+    var role = pair[0], label = pair[1], data = state.captains[role];
+    var card = el("div", "panel captain-card");
+    var avatar = el("div", "avatar");
+    var src = safeImg(data.img);
+    if (src === "https://via.placeholder.com/100") src = ""; /* old default placeholder — use the built-in avatar instead */
+    if (src){
+      var img = document.createElement("img");
+      img.alt = label;
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      img.src = src;
+      img.addEventListener("error", function(){
+        /* Broken photo never leaves a hole — swap in the built-in avatar
+           but keep the social overlay on top of it. */
+        var holder = el("span");
+        holder.innerHTML = AVATAR_SVG;
+        if (img.parentNode) img.parentNode.replaceChild(holder, img);
+      });
+      avatar.appendChild(img);
+    } else {
+      avatar.innerHTML = AVATAR_SVG; /* built-in avatar — no image file to break */
+    }
+    /* Facebook / WhatsApp icons sit ON TOP of the photo (overlay), like the
+       original code — they appear on hover, keyboard focus, or tap. */
+    var overlay = el("div", "avatar-overlay");
+    overlay.appendChild(socialOverlayIcon(data.fb, "social-overlay-fb", ICONS.fb, "Facebook"));
+    overlay.appendChild(socialOverlayIcon(data.wa, "social-overlay-wa", ICONS.wa, "WhatsApp"));
+    avatar.appendChild(overlay);
+    avatar.tabIndex = 0;
+    avatar.setAttribute("aria-label", data.name + " — photo, tap to show Facebook and WhatsApp");
+    function toggleSocial(){
+      var wasShown = avatar.classList.contains("show-social");
+      var shown = document.querySelectorAll(".avatar.show-social");
+      for (var i = 0; i < shown.length; i++) shown[i].classList.remove("show-social");
+      if (!wasShown) avatar.classList.add("show-social");
+    }
+    avatar.addEventListener("click", toggleSocial);
+    avatar.addEventListener("keydown", function(ev){
+      if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); toggleSocial(); }
+    });
+    card.appendChild(avatar);
+    var info = el("div", "captain-info");
+    info.appendChild(el("h3", "wrap-text", data.name));
+    info.appendChild(el("p", "role", label));
+    var phone = el("p", "phone");
+    var ph = el("span");
+    ph.innerHTML = ICONS.phone; /* fixed icon markup */
+    ph.style.display = "inline-flex";
+    phone.appendChild(ph);
+    phone.appendChild(document.createTextNode(data.phone));
+    info.appendChild(phone);
+    card.appendChild(info);
+    grid.appendChild(card);
+  });
+  return grid;
+}
+
+/* ---------- Admin panel ---------- */
+function renderAdminPanel(){
+  var panel = el("div", "panel admin-panel");
+  var h2 = el("h2");
+  var sh = el("span"); sh.innerHTML = ICONS.shield; sh.style.display = "inline-flex";
+  h2.appendChild(sh);
+  h2.appendChild(document.createTextNode("Admin Panel"));
+  panel.appendChild(h2);
+  panel.appendChild(el("p", "admin-note", "এখানে যা বদলাবেন তা এই ফোনে সাথে সাথে বোর্ডে দেখাবে। সবার ফোনে প্রকাশ করতে, সব বদলানো শেষে একদম নিচের Publish বাটনে চাপ দিন — তাহলেই সবাই নতুন তথ্য দেখবে।"));
+  panel.appendChild(adminCaptainsSection());
+  panel.appendChild(adminNoticesSection());
+  panel.appendChild(adminExamsSection());
+  panel.appendChild(adminVotingSection());
+  panel.appendChild(renderPublishSection());
+  return panel;
+}
+function adminSection(icon, title){
+  var sec = el("div", "admin-sec");
+  var h = el("h3");
+  var s = el("span"); s.innerHTML = icon; s.style.display = "inline-flex";
+  h.appendChild(s);
+  h.appendChild(document.createTextNode(title));
+  sec.appendChild(h);
+  return sec;
+}
+function adminCaptainsSection(){
+  var sec = adminSection(ICONS.users, "Class Representative");
+  var grid = el("div", "grid2");
+  [["captain", "Class Captain"], ["viceCaptain", "Vice Captain"]].forEach(function(pair){
+    var role = pair[0], data = state.captains[role];
+    var card = el("div", "subcard stack");
+    card.appendChild(el("p", "sub-title", pair[1]));
+    var refs = {};
+    formRefs["cap_" + role] = refs;
+    refs.name = textInput(data.name, "", LIMITS.name);
+    refs.img = textInput(safeImg(data.img) && data.img !== "https://via.placeholder.com/100" ? data.img : "", "https://...", LIMITS.url);
+    refs.phone = textInput(data.phone, "", LIMITS.phone);
+    refs.fb = textInput(data.fb === "#" ? "" : data.fb, "https://facebook.com/...", LIMITS.url);
+    refs.wa = textInput(data.wa === "#" ? "" : data.wa, "https://wa.me/...", LIMITS.url);
+    card.appendChild(field("Name", refs.name));
+    card.appendChild(field("Photo URL", refs.img));
+    card.appendChild(field("Phone", refs.phone));
+    card.appendChild(field("Facebook Link", refs.fb));
+    card.appendChild(field("WhatsApp Link", refs.wa));
+    ["name", "img", "phone", "fb", "wa"].forEach(function(f){
+      refs[f].addEventListener("input", function(){
+        var v = cleanText(refs[f].value, f === "name" ? LIMITS.name : f === "phone" ? LIMITS.phone : LIMITS.url);
+        state.captains[role][f] = v;
+        scheduleBoardRefresh();
+      });
+    });
+    grid.appendChild(card);
+  });
+  sec.appendChild(grid);
+  sec.appendChild(el("p", "tiny-note", "Leave Facebook / WhatsApp empty if not set — tapping that icon on the photo then does nothing instead of opening a blank page."));
+  return sec;
+}
+/* Captain edits show on the board below without wiping what is being typed. */
+var refreshTimer = null;
+function scheduleBoardRefresh(){
+  if (refreshTimer) clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(function(){
+    var active = document.activeElement;
+    var activeId = active && active.id ? active.id : null;
+    var sel = null;
+    try { if (active && typeof active.selectionStart === "number") sel = active.selectionStart; } catch (e) {}
+    render();
+    if (activeId){
+      var again = document.getElementById(activeId);
+      if (again){
+        again.focus();
+        try { if (sel !== null) again.setSelectionRange(sel, sel); } catch (e) {}
+      }
+    }
+  }, 600);
+}
+function adminNoticesSection(){
+  var sec = adminSection(ICONS.horn, "Notices");
+  var add = el("div", "subcard stack");
+  add.style.marginBottom = "16px";
+  add.appendChild(el("p", "sub-title", "Add New Notice"));
+  var ta = areaInput("", 3, "Write the notice here — only this text will show on the board", LIMITS.notice);
+  formRefs.newNotice = ta;
+  add.appendChild(field("Notice", ta));
+  add.appendChild(btn("Add Notice", "btn btn-primary", function(){
+    var text = cleanText(formRefs.newNotice ? formRefs.newNotice.value : "", LIMITS.notice).trim();
+    if (!text) return;
+    state.notices.unshift({ id: Date.now(), text: text });
+    render();
+  }));
+  sec.appendChild(add);
+  var list = el("div", "stack");
+  state.notices.forEach(function(notice){
+    var card = el("div", "subcard");
+    if (state.editingNoticeId === notice.id){
+      var editWrap = el("div", "stack");
+      var eta = areaInput(notice.text, 3, "", LIMITS.notice);
+      formRefs.editNotice = eta;
+      editWrap.appendChild(field("Notice", eta));
+      var row = el("div", "btn-row");
+      row.appendChild(btn("Save", "btn btn-green btn-sm", function(){
+        var text = cleanText(formRefs.editNotice ? formRefs.editNotice.value : "", LIMITS.notice).trim();
+        if (!text) return;
+        notice.text = text;
+        state.editingNoticeId = null;
+        render();
+      }));
+      row.appendChild(btn("Cancel", "btn btn-ghost btn-sm", function(){ state.editingNoticeId = null; render(); }));
+      editWrap.appendChild(row);
+      card.appendChild(editWrap);
+    } else {
+      var rowB = el("div", "row-between");
+      var main = el("div", "main");
+      main.appendChild(el("p", "admin-item-text wrap-text", notice.text));
+      rowB.appendChild(main);
+      var acts = el("div", "btn-row");
+      acts.appendChild(btn("Edit", "btn btn-primary btn-sm", function(){ state.editingNoticeId = notice.id; render(); }));
+      acts.appendChild(btn("Delete", "btn btn-logout btn-sm", function(){
+        state.notices = state.notices.filter(function(n){ return n.id !== notice.id; });
+        render();
+      }));
+      rowB.appendChild(acts);
+      card.appendChild(rowB);
+    }
+    list.appendChild(card);
+  });
+  if (state.notices.length === 0) list.appendChild(el("p", "empty", "No notices yet."));
+  sec.appendChild(list);
+  return sec;
+}
+function adminExamsSection(){
+  var sec = adminSection(ICONS.cap, "Upcoming Exams");
+  var add = el("div", "subcard stack");
+  add.style.marginBottom = "16px";
+  add.appendChild(el("p", "sub-title", "Add New Exam"));
+  var refs = {};
+  formRefs.newExam = refs;
+  refs.subject = textInput("", "", LIMITS.subject);
+  refs.date = dateInput("");
+  refs.examNotice = areaInput("", 2, "Write one short notice about this exam", LIMITS.examNotice);
+  var grid = el("div", "grid2-fields");
+  grid.appendChild(field("Subject", refs.subject));
+  grid.appendChild(field("Date", refs.date));
+  add.appendChild(grid);
+  add.appendChild(field("Exam Notice (shows when someone taps the exam)", refs.examNotice));
+  add.appendChild(btn("Add Exam", "btn btn-primary", function(){
+    var r = formRefs.newExam;
+    var subject = cleanText(r.subject.value, LIMITS.subject).trim();
+    if (!subject) return;
+    var newExamNotice = cleanText(r.examNotice.value, LIMITS.examNotice).trim();
+    var newExamDate = validDateStr(r.date.value);
+    state.exams.push({
+      id: Date.now(),
+      subject: subject,
+      date: newExamDate,
+      examNotice: newExamNotice
+    });
+    render();
+  }));
+  sec.appendChild(add);
+  var list = el("div", "stack");
+  state.exams.forEach(function(exam){
+    var card = el("div", "subcard");
+    if (state.editingExamId === exam.id){
+      var wrapE = el("div", "stack");
+      var erefs = {};
+      formRefs.editExam = erefs;
+      erefs.subject = textInput(exam.subject, "", LIMITS.subject);
+      erefs.date = dateInput(exam.date);
+      erefs.examNotice = areaInput(exam.examNotice, 2, "", LIMITS.examNotice);
+      var g2 = el("div", "grid2-fields");
+      g2.appendChild(field("Subject", erefs.subject));
+      g2.appendChild(field("Date", erefs.date));
+      wrapE.appendChild(g2);
+      wrapE.appendChild(field("Exam Notice", erefs.examNotice));
+      var row = el("div", "btn-row");
+      row.appendChild(btn("Save", "btn btn-green btn-sm", function(){
+        var r = formRefs.editExam;
+        exam.subject = cleanText(r.subject.value, LIMITS.subject);
+        exam.date = validDateStr(r.date.value);
+        exam.examNotice = cleanText(r.examNotice.value, LIMITS.examNotice);
+        state.editingExamId = null;
+        render();
+      }));
+      row.appendChild(btn("Cancel", "btn btn-ghost btn-sm", function(){ state.editingExamId = null; render(); }));
+      wrapE.appendChild(row);
+      card.appendChild(wrapE);
+    } else {
+      var rowB = el("div", "row-between");
+      var main = el("div", "main");
+      var headLine = exam.subject + (exam.date ? " — " + exam.date : "");
+      var days = getDaysLeft(exam.date);
+      if (days !== null) headLine += " (" + countdownLabel(days) + ")";
+      var hp = el("p", "admin-item-text wrap-text", headLine);
+      hp.style.fontWeight = "700";
+      main.appendChild(hp);
+      main.appendChild(el("p", "admin-item-sub wrap-text", exam.examNotice || "No exam notice written yet."));
+      rowB.appendChild(main);
+      var acts = el("div", "btn-row");
+      acts.appendChild(btn("Edit", "btn btn-primary btn-sm", function(){ state.editingExamId = exam.id; render(); }));
+      acts.appendChild(btn("Delete", "btn btn-logout btn-sm", function(){
+        state.exams = state.exams.filter(function(x){ return x.id !== exam.id; });
+        render();
+      }));
+      rowB.appendChild(acts);
+      card.appendChild(rowB);
+    }
+    list.appendChild(card);
+  });
+  if (state.exams.length === 0) list.appendChild(el("p", "empty", "No exams yet."));
+  sec.appendChild(list);
+  return sec;
+}
+function adminVotingSection(){
+  var sec = adminSection(ICONS.poll, "Live Voting");
+  var card = el("div", "subcard stack");
+  card.appendChild(el("p", "sub-title", "Create New Vote"));
+  var refs = {};
+  formRefs.newPoll = refs;
+  refs.topic = textInput("", "e.g. Next Class Test Topic?", LIMITS.topic);
+  refs.option1 = textInput("", "", LIMITS.option);
+  refs.option2 = textInput("", "", LIMITS.option);
+  card.appendChild(field("Vote Topic (what the vote is about)", refs.topic));
+  var grid = el("div", "grid2-fields");
+  grid.appendChild(field("Option 1", refs.option1));
+  grid.appendChild(field("Option 2", refs.option2));
+  card.appendChild(grid);
+  if (state.pollMessage){
+    var msg = el("p", "msg msg-err", state.pollMessage);
+    msg.setAttribute("role", "status");
+    card.appendChild(msg);
+  }
+  card.appendChild(btn("Create Vote", "btn btn-green", function(){
+    var r = formRefs.newPoll;
+    var topic = cleanText(r.topic.value, LIMITS.topic).trim();
+    var o1 = cleanText(r.option1.value, LIMITS.option).trim();
+    var o2 = cleanText(r.option2.value, LIMITS.option).trim();
+    if (!topic || !o1 || !o2){
+      state.pollMessage = "Please type the vote topic and both options.";
+      render();
+      return;
+    }
+    state.polls.push({ id: Date.now(), topic: topic, options: [{ name: o1, votes: 0 }, { name: o2, votes: 0 }] });
+    state.pollMessage = "";
+    render();
+  }));
+  card.appendChild(el("p", "tiny-note", "Delete or reset votes from the Live Voting section below while you are logged in."));
+  sec.appendChild(card);
+  return sec;
+}
+
+/* ---------- Boot: if anything above failed, the static board in the HTML stays visible ---------- */
+try {
+  state.lastLoadedJson = canonicalJson(boardDataFromRaw(boardDataObject()));
+  render();
+  booted = true;
+  /* Load the live board data fresh, straight from the repo; the embedded
+     data above is only the fallback until that load lands. */
+  loadBoardData();
+  /* Refresh the countdown once a minute so it flips to 0D on exam day without a reload. */
+  setInterval(function(){
+    if (!state.isAdmin) render();
+  }, 60000);
+  /* Re-read the published data every few minutes, so a page left open on a
+     classmate's phone picks up the owner's latest Publish by itself. Data
+     only ever changes this way when the owner has actually published. */
+  setInterval(function(){
+    if (!state.isAdmin) loadBoardData();
+  }, 180000);
+} catch (err) {
+  showErrorBanner();
+}
+})();
+</script>
+</body>
+</html>
