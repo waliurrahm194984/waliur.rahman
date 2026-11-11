@@ -11,26 +11,18 @@
       "subject": "Math",
       "date": "2026-11-20",
       "examNotice": "Math exam somporke: Chapter 3 valo kore pore asba."
+    },
+    {
+      "id": 1794418904398,
+      "subject": "English",
+      "date": "2026-11-12",
+      "examNotice": "Oky"
     }
   ],
   "polls": [
     {
-      "id": 1,
-      "topic": "Next Class Test Topic?",
-      "options": [
-        {
-          "name": "Chapter 1",
-          "votes": 0
-        },
-        {
-          "name": "Chapter 2",
-          "votes": 0
-        }
-      ]
-    },
-    {
-      "id": 1794418657021,
-      "topic": "Kal ke ke exam diba",
+      "id": 1794418922233,
+      "topic": "Kal ki class korba?",
       "options": [
         {
           "name": "Ha",
