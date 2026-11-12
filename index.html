@@ -492,14 +492,14 @@ var DEFAULT_CAPTAINS = {
 };
 
 /* ---------- Class routine (from the owner's handwritten table).
-   7 periods a day, 8:30–12:35 (P1 ends 9:03, P5 ends 11:23 — 2-minute gaps after P1 and P5). A null slot is an
+   7 periods a day, 35 minutes each, 8:30–12:35. A null slot is an
    Off Period; Friday and Saturday are whole-day off. ---------- */
 var PERIODS = [
-  { start: "8:30", end: "9:03" },
+  { start: "8:30", end: "9:05" },
   { start: "9:05", end: "9:40" },
   { start: "9:40", end: "10:15" },
   { start: "10:15", end: "10:50" },
-  { start: "10:50", end: "11:23" },
+  { start: "10:50", end: "11:25" },
   { start: "11:25", end: "12:00" },
   { start: "12:00", end: "12:35" }
 ];
@@ -1210,11 +1210,11 @@ function renderNowBox(d, mins, currentIdx){
     var firstSlot = nextClassAfter(d.slots, 0);
     shell("idle", "grey", null);
     centerLines(["Class suru hobe 8:30"]);
-    if (firstSlot) foot("First: " + firstSlot.slot.subject + " • Period 1 • 8:30 – 9:03");
+    if (firstSlot) foot("First: " + firstSlot.slot.subject + " • Period 1 • 8:30 – 9:05");
     return box;
   }
   if (currentIdx === -1){
-    /* 2-minute gap between periods (9:03–9:05, 11:23–11:25): no period runs. */
+    /* Safety net: if the clock falls between two periods, show Break. */
     var nxGap = null;
     for (var g = 0; g < PERIODS.length; g++){
       if (mins < toMinutes(PERIODS[g].start)){ nxGap = { idx: g, slot: d.slots[g] }; break; }
