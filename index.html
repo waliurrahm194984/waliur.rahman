@@ -492,6 +492,7 @@ function getDaysLeft(dateStr){
 function countdownLabel(days){
   if (days === null) return "";
   if (days < 0) return "Expire";
+  if (days === 0) return "Exam"; /* exam day: badge says Exam, green light stays */
   return days + "D";
 }
 function countdownClass(days){
@@ -1133,7 +1134,7 @@ function renderExams(){
       var d2 = el("span", "today-dot");
       d2.style.width = "10px"; d2.style.height = "10px"; d2.style.marginTop = "0";
       line.appendChild(d2);
-      line.appendChild(document.createTextNode("Ajkei exam — 0D!"));
+      line.appendChild(document.createTextNode("Ajkei exam!"));
       box.appendChild(line);
     }
     body.appendChild(box);
