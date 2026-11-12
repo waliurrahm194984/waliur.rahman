@@ -141,6 +141,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .now-dot.green{ background:#22c55e; box-shadow:0 0 0 4px rgba(34,197,94,.22), 0 0 16px 3px rgba(34,197,94,.75); animation:pulseGreen 1.25s ease-in-out infinite; }
 .now-dot.orange{ background:#f97316; box-shadow:0 0 0 4px rgba(249,115,22,.2), 0 0 16px 3px rgba(249,115,22,.5); }
 .now-dot.grey{ background:#cbd5e1; box-shadow:0 0 0 3px rgba(148,163,184,.25); }
+.now-dot.red{ background:#dc2626; box-shadow:0 0 0 4px rgba(220,38,38,.22), 0 0 16px 3px rgba(220,38,38,.6); }
+.now-box.offday{ background:linear-gradient(160deg,#fef2f2,#ffffff); border-color:rgba(220,38,38,.5); }
+.now-box.offday .now-subject{ color:#991b1b; }
 .poll-card{ padding:16px; border-radius:16px; }
 .poll-card h3{ margin:0 0 12px; font-size:18px; font-weight:700; }
 .vote-btn{ width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; text-align:left; padding:12px; border-radius:12px; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:15px; box-shadow:0 6px 14px -8px rgba(15,23,42,.14), inset 0 1px 0 #fff; }
@@ -490,6 +493,17 @@ function countdownClass(days){
   if (days > 0 && days <= 2) return "countdown-badge countdown-soon";
   if (days < 0) return "countdown-badge countdown-past";
   return "countdown-badge countdown-normal";
+}
+/* Exam day ends at class-end time: on the exam day itself, once 12:35
+   Dhaka time passes, the exam auto-expires (no more green 0D). */
+function isPastClassEndToday(dateStr){
+  if (!dateStr) return false;
+  var parts = String(dateStr).trim().split("-");
+  if (parts.length !== 3) return false;
+  var now = dhakaNow();
+  var sameDay = now.getFullYear() === (+parts[0]) && (now.getMonth() + 1) === (+parts[1]) && now.getDate() === (+parts[2]);
+  if (!sameDay) return false;
+  return (now.getHours() * 60 + now.getMinutes()) >= toMinutes(PERIODS[PERIODS.length - 1].end);
 }
 
 /* ---------- Defaults (identical to the board's existing content) ---------- */
@@ -1063,6 +1077,7 @@ function renderExams(){
   }
   state.exams.forEach(function(exam){
     var days = getDaysLeft(exam.date);
+    if (days === 0 && isPastClassEndToday(exam.date)) days = -1; /* exam day over after 12:35 — auto Expire */
     var isToday = days === 0;
     var open = !!state.openExams[exam.id];
     var card = el("div", "exam-card" + (isToday ? " exam-today" : "") + (open ? " open" : ""));
@@ -1213,7 +1228,7 @@ function renderNowBox(d, mins, currentIdx){
   if (mins >= last){
     shell("ended", "grey", null);
     centerLines(["END CLASS"]);
-    foot("Ajker class sesh hoye geche. Routine abar agamikal 8:30 theke cholbe.");
+    foot("আজকের ক্লাস শেষ হয়ে গেছে। রুটিন আবার আগামীকাল 8:30 থেকে চলবে.");
     return box;
   }
   if (mins < first){
@@ -1274,12 +1289,19 @@ function renderRoutine(){
   dayLine.appendChild(range);
   panel.appendChild(dayLine);
   if (d.slots === "off"){
-    var off = el("div", "now-box idle");
+    /* Holiday (Friday/Saturday): the NOW box shows OFF DAY with a red
+       light, the same place END CLASS appears on class days. */
+    var off = el("div", "now-box offday");
     var oh = el("div", "now-head");
-    oh.appendChild(el("span", "now-dot grey"));
-    oh.appendChild(el("h3", "now-title", "Ajke Off"));
+    var oleft = el("div", "now-left");
+    oleft.appendChild(el("span", "now-label", "NOW"));
+    oleft.appendChild(el("span", "now-dot red"));
+    oh.appendChild(oleft);
     off.appendChild(oh);
-    off.appendChild(el("p", "now-sub", "Ajke " + d.name + " — class chuti. Routine abar agamikal theke cholbe."));
+    var ocenter = el("div", "now-center");
+    ocenter.appendChild(el("div", "now-subject", "OFF DAY"));
+    off.appendChild(ocenter);
+    off.appendChild(el("p", "now-sub", "আজকে " + (d.name === "Friday" ? "শুক্রবার" : "শনিবার") + " — ক্লাস ছুটি। রুটিন আবার আগামীকাল থেকে চলবে।"));
     panel.appendChild(off);
     return panel;
   }
