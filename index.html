@@ -104,6 +104,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .exam-notice-box p{ margin:0; font-size:15px; line-height:1.6; color:#1e293b; }
 .exam-notice-box .today-line{ margin-top:8px; font-size:14px; font-weight:800; color:#15803d; display:flex; align-items:center; gap:8px; }
 .hint{ font-size:12px; color:#94a3b8; margin:14px 0 0; }
+.routine-day{ display:inline-block; padding:4px 12px; border-radius:9999px; font-size:13px; font-weight:800; background:linear-gradient(180deg,#eff6ff,#dbeafe); border:1px solid rgba(59,130,246,.18); color:#1e40af; }
+.routine-row{ display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; box-shadow:0 6px 14px -8px rgba(15,23,42,.14), inset 0 1px 0 #fff; width:100%; max-width:100%; }
+.routine-row + .routine-row{ margin-top:10px; }
+.routine-period{ flex-shrink:0; width:58px; font-size:12px; font-weight:800; color:#475569; }
+.routine-time{ flex-shrink:0; width:86px; font-size:12.5px; font-weight:700; color:#64748b; white-space:nowrap; }
+.routine-subject{ flex:1 1 auto; min-width:0; font-weight:700; font-size:15px; }
+.routine-meta{ display:block; font-size:12.5px; color:#64748b; font-weight:600; margin-top:2px; }
+.routine-row.is-off .routine-subject{ color:#dc2626; }
+.routine-row.is-now{ border-color:rgba(34,197,94,.55) !important; box-shadow:0 0 0 3px rgba(34,197,94,.14), 0 12px 28px -12px rgba(34,197,94,.35) !important; }
+.routine-now-tag{ flex-shrink:0; font-size:11px; font-weight:800; padding:4px 8px; border-radius:9999px; background:#dcfce7; color:#14532d; border:1px solid #86efac; white-space:nowrap; }
+.now-box{ margin-top:16px; border-radius:14px; padding:16px; border:1px solid var(--line); box-shadow:0 10px 22px -10px rgba(15,23,42,.18), inset 0 1px 0 #fff; }
+.now-box.live{ background:linear-gradient(160deg,#f0fdf4,#ffffff); border-color:rgba(34,197,94,.5); }
+.now-box.ended{ background:linear-gradient(160deg,#fff7ed,#ffffff); border-color:rgba(249,115,22,.55); }
+.now-box.idle{ background:#f8fafc; }
+.now-box .now-head{ display:flex; align-items:center; justify-content:space-between; }
+.now-left{ display:flex; align-items:center; gap:10px; }
+.now-label{ font-size:14px; font-weight:800; letter-spacing:.06em; color:#334155; }
+.now-period{ font-size:15px; font-weight:800; padding:4px 10px; border:1.5px solid #334155; border-radius:4px; color:#0f172a; background:#fff; }
+.now-center{ text-align:center; padding:12px 0 4px; }
+.now-subject{ font-size:26px; font-weight:800; line-height:1.35; }
+.now-box.ended .now-subject{ color:#9a3412; }
+.now-box .now-sub{ margin:8px 0 0; font-size:14.5px; line-height:1.6; color:#334155; text-align:center; }
+.now-box .now-next{ margin:6px 0 0; font-size:14px; font-weight:700; color:#475569; text-align:center; }
+.now-dot{ width:13px; height:13px; border-radius:9999px; flex-shrink:0; }
+.now-dot.green{ background:#22c55e; box-shadow:0 0 0 4px rgba(34,197,94,.22), 0 0 16px 3px rgba(34,197,94,.75); animation:pulseGreen 1.25s ease-in-out infinite; }
+.now-dot.orange{ background:#f97316; box-shadow:0 0 0 4px rgba(249,115,22,.2), 0 0 16px 3px rgba(249,115,22,.5); }
+.now-dot.grey{ background:#cbd5e1; box-shadow:0 0 0 3px rgba(148,163,184,.25); }
 .poll-card{ padding:16px; border-radius:16px; }
 .poll-card h3{ margin:0 0 12px; font-size:18px; font-weight:700; }
 .vote-btn{ width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; text-align:left; padding:12px; border-radius:12px; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:15px; box-shadow:0 6px 14px -8px rgba(15,23,42,.14), inset 0 1px 0 #fff; }
@@ -203,6 +230,19 @@ textarea.admin-input{ resize:vertical; }
         <h1>Notice <span class="accent">Board</span></h1>
         <span class="dept-pill">Department of mechanical</span>
       </div>
+    </div>
+    <div class="panel blue-panel">
+      <h2 class="section-title" style="color:#1d4ed8"><span class="icon-box icon-blue"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zm-7 8.32V16c0 1.66 3.13 3 7 3s7-1.34 7-3v-4.68l-7 3.82-7-3.82z"/></svg></span>Class Routine</h2>
+      <p class="wrap-text" style="margin:0 0 10px;font-size:14px;font-weight:700;color:#475569">8:30 AM – 12:35 PM • 7 periods • Friday–Saturday Off</p>
+      <div class="stack">
+        <div class="notice-card"><p class="wrap-text"><b>Sunday:</b> Math-3 ×3 • Off • RAC-cycles ×3</p></div>
+        <div class="notice-card"><p class="wrap-text"><b>Monday:</b> RAC-cycles • Business • Off • Computer ×3 • Off</p></div>
+        <div class="notice-card"><p class="wrap-text"><b>Tuesday:</b> Materials • Social Science • Business • RAC-cycle • Machin Shop-2 ×3</p></div>
+        <div class="notice-card"><p class="wrap-text"><b>Wednesday:</b> Machin Shop-2 • Computer ×3 • Math-3 ×2 • Off</p></div>
+        <div class="notice-card"><p class="wrap-text"><b>Thursday:</b> Machin Shop-2 ×3 • Math-3 • Materials • Social Science • Off</p></div>
+        <div class="notice-card"><p class="wrap-text"><b>Friday – Saturday:</b> Off</p></div>
+      </div>
+      <p class="hint">JavaScript on thakle upore ajker routine ar NOW box dekhabe.</p>
     </div>
     <div class="panel blue-panel">
       <h2 class="section-title" style="color:#1d4ed8"><span class="icon-box icon-blue"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h3l5 4.5v-13L6 10H3zm13.5 2a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zM14 5.6v12.8c2.9-1.2 5-3.9 5-6.4s-2.1-5.2-5-6.4z"/></svg></span>Notices</h2>
@@ -451,6 +491,71 @@ var DEFAULT_CAPTAINS = {
   viceCaptain: { name: "Vice Captain", phone: "01XXXXXXXXX", fb: "#", wa: "#", img: "https://via.placeholder.com/100" }
 };
 
+/* ---------- Class routine (from the owner's handwritten table).
+   7 periods a day, 8:30–12:35 (P1 ends 9:03, P5 ends 11:23 — 2-minute gaps after P1 and P5). A null slot is an
+   Off Period; Friday and Saturday are whole-day off. ---------- */
+var PERIODS = [
+  { start: "8:30", end: "9:03" },
+  { start: "9:05", end: "9:40" },
+  { start: "9:40", end: "10:15" },
+  { start: "10:15", end: "10:50" },
+  { start: "10:50", end: "11:23" },
+  { start: "11:25", end: "12:00" },
+  { start: "12:00", end: "12:35" }
+];
+var DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+var DEFAULT_ROUTINE = {
+  days: {
+    Sunday: [
+      { subject: "Math-3", teacher: "MAS", room: "1407" },
+      { subject: "Math-3", teacher: "MAS", room: "1407" },
+      { subject: "Math-3", teacher: "MAS", room: "1407" },
+      null,
+      { subject: "RAC-cycles", teacher: "NIK", room: "1105" },
+      { subject: "RAC-cycles", teacher: "NIK", room: "1105" },
+      { subject: "RAC-cycles", teacher: "NIK", room: "1105" }
+    ],
+    Monday: [
+      { subject: "RAC-cycles", teacher: "NIK", room: "1408" },
+      { subject: "Business", teacher: "RNR", room: "1407" },
+      null,
+      { subject: "Computer", teacher: "RKS", room: "1203" },
+      { subject: "Computer", teacher: "RKS", room: "1203" },
+      { subject: "Computer", teacher: "RKS", room: "1203" },
+      null
+    ],
+    Tuesday: [
+      { subject: "Materials", teacher: "PH", room: "1407" },
+      { subject: "Social Science", teacher: "TH", room: "1407" },
+      { subject: "Business", teacher: "RNR", room: "1407" },
+      { subject: "RAC-cycle", teacher: "NIK", room: "112" },
+      { subject: "Machin Shop-2", teacher: "ME", room: "1106" },
+      { subject: "Machin Shop-2", teacher: "ME", room: "1106" },
+      { subject: "Machin Shop-2", teacher: "ME", room: "1106" }
+    ],
+    Wednesday: [
+      { subject: "Machin Shop-2", teacher: "ME", room: "113" },
+      { subject: "Computer", teacher: "RKS", room: "1203" },
+      { subject: "Computer", teacher: "RKS", room: "1203" },
+      { subject: "Computer", teacher: "RKS", room: "1203" },
+      { subject: "Math-3", teacher: "MAS", room: "1408" },
+      { subject: "Math-3", teacher: "MAS", room: "1408" },
+      null
+    ],
+    Thursday: [
+      { subject: "Machin Shop-2", teacher: "ME", room: "1106" },
+      { subject: "Machin Shop-2", teacher: "ME", room: "1106" },
+      { subject: "Machin Shop-2", teacher: "ME", room: "1106" },
+      { subject: "Math-3", teacher: "MAS", room: "1408" },
+      { subject: "Materials", teacher: "PH", room: "1408" },
+      { subject: "Social Science", teacher: "TH", room: "1408" },
+      null
+    ],
+    Friday: "off",
+    Saturday: "off"
+  }
+};
+
 /* ---------- Tiny DOM helpers — user text is only ever set as text, never as HTML ---------- */
 function el(tag, cls, text){
   var n = document.createElement(tag);
@@ -529,6 +634,7 @@ var state = {
   exams: JSON.parse(JSON.stringify(DEFAULT_EXAMS)),
   polls: JSON.parse(JSON.stringify(DEFAULT_POLLS)),
   captains: JSON.parse(JSON.stringify(DEFAULT_CAPTAINS)),
+  routine: JSON.parse(JSON.stringify(DEFAULT_ROUTINE)),
   ghToken: "",
   publishing: false,
   publishOk: false,
@@ -557,6 +663,24 @@ function verifyAdminPassword(pw){
   return h;
 }
 
+function normalizeRoutine(r){
+  if (!r || typeof r !== "object" || !r.days || typeof r.days !== "object") return null;
+  var days = {};
+  var ok = false;
+  DAY_NAMES.forEach(function(d){
+    var v = r.days[d];
+    if (v === "off"){ days[d] = "off"; ok = true; return; }
+    if (!Array.isArray(v) || v.length !== PERIODS.length) return;
+    var slots = v.map(function(s){
+      if (s === null) return null;
+      if (!s || typeof s !== "object" || !s.subject) return null;
+      return { subject: String(s.subject).slice(0, 60), teacher: s.teacher ? String(s.teacher).slice(0, 20) : "", room: s.room ? String(s.room).slice(0, 20) : "" };
+    });
+    days[d] = slots;
+    ok = true;
+  });
+  return ok ? { days: days } : null;
+}
 /* ---------- Board data loading: fetch data.json fresh on every visit.
    The embedded DEFAULT_* values stay as the fallback if the fetch fails. -- */
 function applyBoardData(data){
@@ -570,6 +694,8 @@ function applyBoardData(data){
   if (p){ state.polls = p; applied = true; }
   var c = normalizeCaptains(data.captains, DEFAULT_CAPTAINS);
   if (c){ state.captains = c; applied = true; }
+  var r = normalizeRoutine(data.routine);
+  if (r){ state.routine = r; applied = true; }
   return applied;
 }
 function fetchJsonFresh(url){
@@ -612,7 +738,8 @@ function boardDataObject(){
     notices: state.notices,
     exams: state.exams,
     polls: state.polls,
-    captains: state.captains
+    captains: state.captains,
+    routine: state.routine
   };
 }
 function utf8ToBase64(str){
@@ -730,6 +857,7 @@ function render(){
   if (state.showLogin && !state.isAdmin) wrap.appendChild(renderLogin());
   if (state.isAdmin && state.loginMessage) wrap.appendChild(renderGranted());
   if (state.isAdmin) wrap.appendChild(renderAdminPanel());
+  wrap.appendChild(renderRoutine());
   wrap.appendChild(renderNotices());
   wrap.appendChild(renderExams());
   wrap.appendChild(renderVoting());
@@ -898,7 +1026,7 @@ function handleFooterCreditTap(){
   }
 }
 
-/* ---------- Sections: 1. Notices (only the notice text) ---------- */
+/* ---------- Sections: 2. Notices (only the notice text) ---------- */
 function renderNotices(){
   var panel = el("div", "panel blue-panel");
   panel.appendChild(sectionTitle("icon-blue", ICONS.horn, "Notices", "#1d4ed8"));
@@ -915,7 +1043,7 @@ function renderNotices(){
   return panel;
 }
 
-/* ---------- Sections: 2. Upcoming Exams (countdown + tap for one exam notice) ---------- */
+/* ---------- Sections: 3. Upcoming Exams (countdown + tap for one exam notice) ---------- */
 function renderExams(){
   var panel = el("div", "panel");
   panel.appendChild(sectionTitle("icon-orange", ICONS.cap, "Upcoming Exams", ""));
@@ -977,7 +1105,7 @@ function renderExams(){
   return panel;
 }
 
-/* ---------- Sections: 3. Live Voting ---------- */
+/* ---------- Sections: 4. Live Voting ---------- */
 function renderVoting(){
   var panel = el("div", "panel");
   var title = sectionTitle("icon-green", ICONS.poll, "Live Voting", "#15803d");
@@ -1022,7 +1150,159 @@ function renderVoting(){
   return panel;
 }
 
-/* ---------- Sections: 4. Class Representative ---------- */
+/* ---------- Sections: 1. Class Routine (before Notices) ----------
+   Shows today's routine from data.json, auto-changing by day (Dhaka
+   time). Friday and Saturday show Off. The "Now" box below it follows
+   the clock: live class (green), Off Period, before 8:30, and CLASS END
+   (orange) after 12:35. */
+function dhakaNow(){
+  try { return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })); }
+  catch (e) { return new Date(); }
+}
+function toMinutes(hhmm){ var p = hhmm.split(":"); return (+p[0]) * 60 + (+p[1]); }
+function routineDay(){
+  var now = dhakaNow();
+  var name = DAY_NAMES[now.getDay()];
+  var slots = (state.routine && state.routine.days) ? state.routine.days[name] : null;
+  if (!slots) slots = DEFAULT_ROUTINE.days[name];
+  return { now: now, name: name, slots: slots };
+}
+function nextClassAfter(slots, fromIdx){
+  for (var i = fromIdx; i < slots.length; i++){
+    if (slots[i]) return { idx: i, slot: slots[i] };
+  }
+  return null;
+}
+function renderNowBox(d, mins, currentIdx){
+  /* NOW box, like the owner's sketch: "NOW" + dot top-left, period count
+     (1P..7P) in a bordered box top-right, subject / teacher / room big in
+     the middle. Green dot while class runs; after 12:35 the box turns
+     orange and END CLASS stands in place of the subject. */
+  var first = toMinutes(PERIODS[0].start), last = toMinutes(PERIODS[PERIODS.length - 1].end);
+  var box, head, left, center;
+  function shell(cls, dotCls, periodLabel){
+    box = el("div", "now-box " + cls);
+    head = el("div", "now-head");
+    left = el("div", "now-left");
+    left.appendChild(el("span", "now-label", "NOW"));
+    left.appendChild(el("span", "now-dot " + dotCls));
+    head.appendChild(left);
+    if (periodLabel) head.appendChild(el("span", "now-period", periodLabel));
+    box.appendChild(head);
+    center = el("div", "now-center");
+    box.appendChild(center);
+    return box;
+  }
+  function centerLines(lines){
+    lines.forEach(function(t){ center.appendChild(el("div", "now-subject", t)); });
+  }
+  function foot(subText, nextText){
+    if (subText) box.appendChild(el("p", "now-sub", subText));
+    if (nextText) box.appendChild(el("p", "now-next", nextText));
+  }
+  if (mins >= last){
+    shell("ended", "grey", null);
+    centerLines(["END CLASS"]);
+    foot("Ajker class sesh hoye geche. Routine abar agamikal 8:30 theke cholbe.");
+    return box;
+  }
+  if (mins < first){
+    var firstSlot = nextClassAfter(d.slots, 0);
+    shell("idle", "grey", null);
+    centerLines(["Class suru hobe 8:30"]);
+    if (firstSlot) foot("First: " + firstSlot.slot.subject + " • Period 1 • 8:30 – 9:03");
+    return box;
+  }
+  if (currentIdx === -1){
+    /* 2-minute gap between periods (9:03–9:05, 11:23–11:25): no period runs. */
+    var nxGap = null;
+    for (var g = 0; g < PERIODS.length; g++){
+      if (mins < toMinutes(PERIODS[g].start)){ nxGap = { idx: g, slot: d.slots[g] }; break; }
+    }
+    shell("idle", "grey", nxGap ? (nxGap.idx + 1) + "P" : null);
+    centerLines(["Break"]);
+    if (nxGap && nxGap.slot) foot("Erpor: " + nxGap.slot.subject + " • Period " + (nxGap.idx + 1) + " • " + PERIODS[nxGap.idx].start);
+    return box;
+  }
+  var slot = d.slots[currentIdx];
+  var label = (currentIdx + 1) + "P";
+  if (!slot){
+    var nx = nextClassAfter(d.slots, currentIdx + 1);
+    shell("idle", "grey", label);
+    centerLines(["Off Period"]);
+    foot("Period " + (currentIdx + 1) + " • " + PERIODS[currentIdx].start + " – " + PERIODS[currentIdx].end + " — kono class nei.",
+      nx ? "Erpor: " + nx.slot.subject + " • Period " + (nx.idx + 1) + " • " + PERIODS[nx.idx].start : "Erpor ar kono class nei — 12:35 e class sesh.");
+    return box;
+  }
+  shell("live", "green", label);
+  var lines = [slot.subject];
+  if (slot.teacher) lines.push(slot.teacher);
+  if (slot.room) lines.push("(" + slot.room + ")");
+  centerLines(lines);
+  var meta = "Period " + (currentIdx + 1) + " • " + PERIODS[currentIdx].start + " – " + PERIODS[currentIdx].end;
+  var nx2 = nextClassAfter(d.slots, currentIdx + 1);
+  var nextText = null;
+  if (nx2){
+    if (nx2.idx - currentIdx - 1 > 0) nextText = "Erpor Off Period, tarpor: " + nx2.slot.subject + " • Period " + (nx2.idx + 1) + " • " + PERIODS[nx2.idx].start;
+    else nextText = "Erpor: " + nx2.slot.subject + " • Period " + (nx2.idx + 1) + " • " + PERIODS[nx2.idx].start;
+  } else {
+    nextText = "Eta-i ajker sesh class — 12:35 e class sesh.";
+  }
+  foot(meta, nextText);
+  return box;
+}
+function renderRoutine(){
+  var panel = el("div", "panel blue-panel");
+  var d = routineDay();
+  panel.appendChild(sectionTitle("icon-blue", ICONS.cap, "Class Routine"));
+  var dayLine = el("div");
+  dayLine.style.margin = "-8px 0 14px";
+  dayLine.appendChild(el("span", "routine-day", "Today: " + d.name));
+  var range = el("span");
+  range.style.cssText = "margin-left:10px;font-size:13px;font-weight:700;color:#64748b";
+  range.textContent = "8:30 AM – 12:35 PM • 7 periods";
+  dayLine.appendChild(range);
+  panel.appendChild(dayLine);
+  if (d.slots === "off"){
+    var off = el("div", "now-box idle");
+    var oh = el("div", "now-head");
+    oh.appendChild(el("span", "now-dot grey"));
+    oh.appendChild(el("h3", "now-title", "Ajke Off"));
+    off.appendChild(oh);
+    off.appendChild(el("p", "now-sub", "Ajke " + d.name + " — class chuti. Routine abar agamikal theke cholbe."));
+    panel.appendChild(off);
+    return panel;
+  }
+  var now = d.now;
+  var mins = now.getHours() * 60 + now.getMinutes();
+  var currentIdx = -1;
+  for (var i = 0; i < PERIODS.length; i++){
+    if (mins >= toMinutes(PERIODS[i].start) && mins < toMinutes(PERIODS[i].end)){ currentIdx = i; break; }
+  }
+  var stack = el("div", "stack");
+  for (var j = 0; j < PERIODS.length; j++){
+    var slot = d.slots[j];
+    var row = el("div", "routine-row" + (slot ? "" : " is-off") + (j === currentIdx ? " is-now" : ""));
+    row.appendChild(el("span", "routine-period", "Period " + (j + 1)));
+    row.appendChild(el("span", "routine-time", PERIODS[j].start + " – " + PERIODS[j].end));
+    var subj = el("span", "routine-subject");
+    if (slot){
+      subj.appendChild(document.createTextNode(slot.subject));
+      var meta = el("span", "routine-meta", (slot.teacher ? slot.teacher : "") + (slot.room ? " • Room " + slot.room : ""));
+      subj.appendChild(meta);
+    } else {
+      subj.appendChild(document.createTextNode("Off Period"));
+    }
+    row.appendChild(subj);
+    if (j === currentIdx) row.appendChild(el("span", "routine-now-tag", "Ekhon"));
+    stack.appendChild(row);
+  }
+  panel.appendChild(stack);
+  panel.appendChild(renderNowBox(d, mins, currentIdx));
+  return panel;
+}
+
+/* ---------- Sections: 5. Class Representative ---------- */
 function socialOverlayIcon(url, cls, svg, label){
   var safe = safeUrl(url);
   if (!safe){

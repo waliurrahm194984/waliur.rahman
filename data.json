@@ -2,7 +2,7 @@
   "notices": [
     {
       "id": 1794419815812,
-      "text": "Sobai Bangla  book niya aiso"
+      "text": "Sobai Bangla book niya aiso"
     },
     {
       "id": 1794418492590,
@@ -50,6 +50,177 @@
       "fb": "#",
       "wa": "#",
       "img": "https://via.placeholder.com/100"
+    }
+  },
+  "routine": {
+    "days": {
+      "Sunday": [
+        {
+          "subject": "Math-3",
+          "teacher": "MAS",
+          "room": "1407"
+        },
+        {
+          "subject": "Math-3",
+          "teacher": "MAS",
+          "room": "1407"
+        },
+        {
+          "subject": "Math-3",
+          "teacher": "MAS",
+          "room": "1407"
+        },
+        null,
+        {
+          "subject": "RAC-cycles",
+          "teacher": "NIK",
+          "room": "1105"
+        },
+        {
+          "subject": "RAC-cycles",
+          "teacher": "NIK",
+          "room": "1105"
+        },
+        {
+          "subject": "RAC-cycles",
+          "teacher": "NIK",
+          "room": "1105"
+        }
+      ],
+      "Monday": [
+        {
+          "subject": "RAC-cycles",
+          "teacher": "NIK",
+          "room": "1408"
+        },
+        {
+          "subject": "Business",
+          "teacher": "RNR",
+          "room": "1407"
+        },
+        null,
+        {
+          "subject": "Computer",
+          "teacher": "RKS",
+          "room": "1203"
+        },
+        {
+          "subject": "Computer",
+          "teacher": "RKS",
+          "room": "1203"
+        },
+        {
+          "subject": "Computer",
+          "teacher": "RKS",
+          "room": "1203"
+        },
+        null
+      ],
+      "Tuesday": [
+        {
+          "subject": "Materials",
+          "teacher": "PH",
+          "room": "1407"
+        },
+        {
+          "subject": "Social Science",
+          "teacher": "TH",
+          "room": "1407"
+        },
+        {
+          "subject": "Business",
+          "teacher": "RNR",
+          "room": "1407"
+        },
+        {
+          "subject": "RAC-cycle",
+          "teacher": "NIK",
+          "room": "112"
+        },
+        {
+          "subject": "Machin Shop-2",
+          "teacher": "ME",
+          "room": "1106"
+        },
+        {
+          "subject": "Machin Shop-2",
+          "teacher": "ME",
+          "room": "1106"
+        },
+        {
+          "subject": "Machin Shop-2",
+          "teacher": "ME",
+          "room": "1106"
+        }
+      ],
+      "Wednesday": [
+        {
+          "subject": "Machin Shop-2",
+          "teacher": "ME",
+          "room": "113"
+        },
+        {
+          "subject": "Computer",
+          "teacher": "RKS",
+          "room": "1203"
+        },
+        {
+          "subject": "Computer",
+          "teacher": "RKS",
+          "room": "1203"
+        },
+        {
+          "subject": "Computer",
+          "teacher": "RKS",
+          "room": "1203"
+        },
+        {
+          "subject": "Math-3",
+          "teacher": "MAS",
+          "room": "1408"
+        },
+        {
+          "subject": "Math-3",
+          "teacher": "MAS",
+          "room": "1408"
+        },
+        null
+      ],
+      "Thursday": [
+        {
+          "subject": "Machin Shop-2",
+          "teacher": "ME",
+          "room": "1106"
+        },
+        {
+          "subject": "Machin Shop-2",
+          "teacher": "ME",
+          "room": "1106"
+        },
+        {
+          "subject": "Machin Shop-2",
+          "teacher": "ME",
+          "room": "1106"
+        },
+        {
+          "subject": "Math-3",
+          "teacher": "MAS",
+          "room": "1408"
+        },
+        {
+          "subject": "Materials",
+          "teacher": "PH",
+          "room": "1408"
+        },
+        {
+          "subject": "Social Science",
+          "teacher": "TH",
+          "room": "1408"
+        },
+        null
+      ],
+      "Friday": "off",
+      "Saturday": "off"
     }
   }
 }
