@@ -29,7 +29,6 @@ button:hover{ transform:translateY(-1px); }
 button:active{ transform:translateY(0) scale(.985); }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible{ outline:3px solid rgba(59,130,246,.45); outline-offset:2px; }
 .wrap{ max-width:56rem; margin:0 auto; padding-bottom:5rem; }
-.wrap::before{ content:""; display:block; height:6px; border-radius:9999px; background:linear-gradient(90deg,#2563eb,#06b6d4,#16a34a,#f97316); margin:12px 0 14px; }
 .wrap > * + *{ margin-top:1.5rem; }
 @media(min-width:768px){ .wrap > * + *{ margin-top:1.75rem; } }
 .panel{
@@ -74,11 +73,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow:0 14px 28px -12px rgba(15,23,42,.20), 0 5px 12px -4px rgba(15,23,42,.10), 0 1px 3px rgba(15,23,42,.06), inset 0 1px 0 #fff;
   width:100%; max-width:100%;
 }
-.notice-card{ padding:14px 16px; border-left:4px solid var(--blue); transition:box-shadow .25s ease, transform .25s ease, border-color .25s ease; }
-@media(min-width:768px){ .notice-card{ padding:16px 20px; } }
+.notice-card{ display:flex; gap:12px; align-items:flex-start; padding:18px 20px; border-left:5px solid var(--blue); box-shadow:0 14px 30px -14px rgba(37,99,235,.35), 0 8px 16px -8px rgba(15,23,42,.12), inset 0 1px 0 #fff; transition:box-shadow .25s ease, transform .25s ease, border-color .25s ease; }
+@media(min-width:768px){ .notice-card{ padding:20px 22px; } }
 .notice-card:hover{ transform:translateY(-2px); border-color:rgba(59,130,246,.28); box-shadow:0 20px 36px -14px rgba(15,23,42,.24), 0 8px 16px -6px rgba(15,23,42,.12), inset 0 1px 0 #fff; }
-.notice-card p{ margin:0; font-size:15.5px; line-height:1.65; }
-@media(min-width:768px){ .notice-card p{ font-size:16px; } }
+.notice-card p{ margin:0; font-size:17px; font-weight:600; line-height:1.55; }
+@media(min-width:768px){ .notice-card p{ font-size:18px; } }
+.notice-horn{ flex:0 0 auto; width:36px; height:36px; border-radius:9999px; background:#dbeafe; color:var(--blue); display:flex; align-items:center; justify-content:center; }
+.notice-horn svg{ width:20px; height:20px; }
+/* Premium Notices panel: the board's heart — it must catch the eye first. */
+.notices-panel{ border:2px solid rgba(37,99,235,.45); box-shadow:0 24px 48px -16px rgba(37,99,235,.5), 0 10px 20px -10px rgba(15,23,42,.14), 0 3px 8px rgba(15,23,42,.07), inset 0 1px 0 #fff; }
+.notice-count{ display:inline-flex; align-items:center; justify-content:center; min-width:26px; height:26px; padding:0 8px; margin-left:8px; border-radius:9999px; background:var(--blue); color:#fff; font-size:13px; font-weight:800; }
 .exam-card{ border-radius:14px; overflow:hidden; }
 .exam-head{ width:100%; display:flex; align-items:flex-start; gap:12px; padding:16px; background:none; border:0; text-align:left; font-size:16px; }
 .exam-head:hover{ background:#f8fafc; transform:none; }
@@ -260,10 +264,10 @@ textarea.admin-input{ resize:vertical; }
       </div>
       <p class="hint">JavaScript on thakle upore ajker routine ar NOW box dekhabe.</p>
     </div>
-    <div class="panel blue-panel">
-      <h2 class="section-title" style="color:#1d4ed8"><span class="icon-box icon-blue"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h3l5 4.5v-13L6 10H3zm13.5 2a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zM14 5.6v12.8c2.9-1.2 5-3.9 5-6.4s-2.1-5.2-5-6.4z"/></svg></span>Notices</h2>
+    <div class="panel blue-panel notices-panel">
+      <h2 class="section-title" style="color:#1d4ed8"><span class="icon-box icon-blue"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h3l5 4.5v-13L6 10H3zm13.5 2a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zM14 5.6v12.8c2.9-1.2 5-3.9 5-6.4s-2.1-5.2-5-6.4z"/></svg></span>Notices<span class="notice-count">1</span></h2>
       <div class="stack">
-        <div class="notice-card"><p class="wrap-text">Final semester routine is out.</p></div>
+        <div class="notice-card"><span class="notice-horn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h3l5 4.5v-13L6 10H3zm13.5 2a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zM14 5.6v12.8c2.9-1.2 5-3.9 5-6.4s-2.1-5.2-5-6.4z"/></svg></span><p class="wrap-text">Final semester routine is out.</p></div>
       </div>
     </div>
     <div class="panel">
@@ -1058,14 +1062,19 @@ function handleFooterCreditTap(){
 
 /* ---------- Sections: 2. Notices (only the notice text) ---------- */
 function renderNotices(){
-  var panel = el("div", "panel blue-panel");
-  panel.appendChild(sectionTitle("icon-blue", ICONS.horn, "Notices", "#1d4ed8"));
+  var panel = el("div", "panel blue-panel notices-panel");
+  var title = sectionTitle("icon-blue", ICONS.horn, "Notices", "#1d4ed8");
+  if (state.notices.length > 0) title.appendChild(el("span", "notice-count", String(state.notices.length)));
+  panel.appendChild(title);
   var stack = el("div", "stack");
   if (state.notices.length === 0){
     stack.appendChild(el("p", "empty", "No notices yet."));
   }
   state.notices.forEach(function(notice){
     var card = el("div", "notice-card");
+    var horn = el("span", "notice-horn");
+    horn.innerHTML = ICONS.horn; /* fixed icon markup */
+    card.appendChild(horn);
     card.appendChild(el("p", "wrap-text", notice.text));
     stack.appendChild(card);
   });
