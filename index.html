@@ -114,6 +114,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .routine-row.is-off .routine-subject{ color:#dc2626; }
 .routine-row.is-now{ border-color:rgba(34,197,94,.55) !important; box-shadow:0 0 0 3px rgba(34,197,94,.14), 0 12px 28px -12px rgba(34,197,94,.35) !important; }
 .routine-now-tag{ flex-shrink:0; font-size:11px; font-weight:800; padding:4px 8px; border-radius:9999px; background:#dcfce7; color:#14532d; border:1px solid #86efac; white-space:nowrap; }
+.routine-table-wrap{ overflow-x:auto; margin:0 -4px; padding:0 4px 4px; }
+.routine-table{ width:100%; min-width:540px; border-collapse:collapse; font-size:13.5px; }
+.routine-table th,.routine-table td{ border:1px solid var(--line); padding:8px 6px; text-align:center; vertical-align:middle; background:#fff; }
+.routine-table th{ background:#f8fafc; font-weight:800; font-size:12.5px; color:#334155; white-space:nowrap; }
+.routine-table td.is-off{ color:#dc2626; font-weight:800; }
+.routine-table td.is-now{ background:#f0fdf4; box-shadow:inset 0 0 0 2px #22c55e; }
+.routine-time-cell{ font-size:12px; font-weight:700; color:#475569; line-height:1.5; }
+.routine-cell-subject{ font-weight:800; font-size:14px; }
+.routine-cell-meta{ font-size:11.5px; color:#64748b; font-weight:600; margin-top:2px; }
+.routine-table .routine-now-tag{ display:inline-block; margin-top:4px; }
 .now-box{ margin-top:16px; border-radius:14px; padding:16px; border:1px solid var(--line); box-shadow:0 10px 22px -10px rgba(15,23,42,.18), inset 0 1px 0 #fff; }
 .now-box.live{ background:linear-gradient(160deg,#f0fdf4,#ffffff); border-color:rgba(34,197,94,.5); }
 .now-box.ended{ background:linear-gradient(160deg,#fff7ed,#ffffff); border-color:rgba(249,115,22,.55); }
@@ -1279,25 +1289,55 @@ function renderRoutine(){
   for (var i = 0; i < PERIODS.length; i++){
     if (mins >= toMinutes(PERIODS[i].start) && mins < toMinutes(PERIODS[i].end)){ currentIdx = i; break; }
   }
-  var stack = el("div", "stack");
-  for (var j = 0; j < PERIODS.length; j++){
-    var slot = d.slots[j];
-    var row = el("div", "routine-row" + (slot ? "" : " is-off") + (j === currentIdx ? " is-now" : ""));
-    row.appendChild(el("span", "routine-period", "Period " + (j + 1)));
-    row.appendChild(el("span", "routine-time", PERIODS[j].start + " – " + PERIODS[j].end));
-    var subj = el("span", "routine-subject");
-    if (slot){
-      subj.appendChild(document.createTextNode(slot.subject));
-      var meta = el("span", "routine-meta", (slot.teacher ? slot.teacher : "") + (slot.room ? " • Room " + slot.room : ""));
-      subj.appendChild(meta);
-    } else {
-      subj.appendChild(document.createTextNode("Off Period"));
-    }
-    row.appendChild(subj);
-    if (j === currentIdx) row.appendChild(el("span", "routine-now-tag", "Ekhon"));
-    stack.appendChild(row);
+  /* One compact table, like the owner's handwritten sheet: Period row,
+     Time row, then today's subjects — multi-period subjects span their
+     columns (colspan), Off Periods in red, current period highlighted. */
+  var wrap = el("div", "routine-table-wrap");
+  var table = document.createElement("table");
+  table.className = "routine-table";
+  var headRow = document.createElement("tr");
+  headRow.appendChild(el("th", null, "Period"));
+  for (var p = 0; p < PERIODS.length; p++) headRow.appendChild(el("th", null, String(p + 1)));
+  table.appendChild(headRow);
+  var timeRow = document.createElement("tr");
+  timeRow.appendChild(el("th", null, "Time"));
+  for (var t = 0; t < PERIODS.length; t++){
+    var tc = el("td", "routine-time-cell");
+    tc.appendChild(el("div", null, PERIODS[t].start));
+    tc.appendChild(el("div", null, PERIODS[t].end));
+    timeRow.appendChild(tc);
   }
-  panel.appendChild(stack);
+  table.appendChild(timeRow);
+  var dayRow = document.createElement("tr");
+  dayRow.appendChild(el("th", null, d.name));
+  var j = 0;
+  while (j < PERIODS.length){
+    var slot = d.slots[j];
+    var span = 1;
+    while (j + span < PERIODS.length){
+      var ns = d.slots[j + span];
+      var same = (slot === null && ns === null) ||
+        (slot && ns && slot.subject === ns.subject && slot.teacher === ns.teacher && slot.room === ns.room);
+      if (!same) break;
+      span++;
+    }
+    var cell = el("td", slot ? "" : "is-off");
+    if (span > 1) cell.colSpan = span;
+    if (currentIdx >= j && currentIdx < j + span) cell.className += " is-now";
+    if (slot){
+      cell.appendChild(el("div", "routine-cell-subject", slot.subject));
+      var cm = (slot.teacher ? slot.teacher : "") + (slot.room ? " (" + slot.room + ")" : "");
+      if (cm) cell.appendChild(el("div", "routine-cell-meta", cm));
+    } else {
+      cell.appendChild(el("div", "routine-cell-subject", "Off"));
+    }
+    if (currentIdx >= j && currentIdx < j + span) cell.appendChild(el("div", "routine-now-tag", "Ekhon"));
+    dayRow.appendChild(cell);
+    j += span;
+  }
+  table.appendChild(dayRow);
+  wrap.appendChild(table);
+  panel.appendChild(wrap);
   panel.appendChild(renderNowBox(d, mins, currentIdx));
   return panel;
 }
