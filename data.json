@@ -1,41 +1,46 @@
 {
   "notices": [
     {
-      "id": 1794419815812,
-      "text": "Sobai Bangla book niya aiso"
-    },
-    {
-      "id": 1794418492590,
-      "text": "Kal exam"
+      "id": 1794472506560,
+      "text": "⛔⛔⛔পরবর্তী ক্লাসে আমরা (CI)স্যারের কাছে আমাদের ল্যাব ক্লাস চাইবো অন্যথায় মেশিন শপ প্র্যাকটিস ২ ক্লাস বর্জন করা হবে। ⛔⛔⛔"
     }
   ],
   "exams": [
     {
-      "id": 1,
-      "subject": "Math",
-      "date": "2026-11-20",
-      "examNotice": "Math exam somporke: Chapter 3 valo kore pore asba."
-    },
-    {
-      "id": 1794418904398,
-      "subject": "English",
+      "id": 1794472196466,
+      "subject": "Social science",
       "date": "2026-11-12",
-      "examNotice": "Oky"
+      "examNotice": "সোশ্যাল সায়েন্সের এক দুই তিন অধ্যায়ের উপরে ক্লাস টেস্ট হবে (12/11/2026)"
     },
     {
-      "id": 1794419841848,
-      "subject": "Ict",
-      "date": "2026-11-11",
-      "examNotice": "Sokal e exam ase"
+      "id": 1794472295982,
+      "subject": "MATH-3",
+      "date": "2026-11-15",
+      "examNotice": "ম্যাথ প্রথম  দ্বিতীয় এবং চতুর্থ অধ্যায়ের উপরে লিখিত পরীক্ষা হবে। (15/11/2026)"
     },
     {
-      "id": 1794419889810,
-      "subject": "BGS",
-      "date": "2026-11-10",
-      "examNotice": ""
+      "id": 1794472363909,
+      "subject": "Machine Shop-2",
+      "date": "2026-11-17",
+      "examNotice": "মেশিন সব প্র্যাকটিস -2এর সম্পূর্ণ দ্বিতীয় অধ্যায়ের উপর লিখিত ক্লাস টেস্ট হবে।"
     }
   ],
-  "polls": [],
+  "polls": [
+    {
+      "id": 1794472578432,
+      "topic": "কালকে কি ক্লাস করবা?",
+      "options": [
+        {
+          "name": "হা",
+          "votes": 0
+        },
+        {
+          "name": "না",
+          "votes": 0
+        }
+      ]
+    }
+  ],
   "captains": {
     "captain": {
       "name": "Waliur Rahman",
