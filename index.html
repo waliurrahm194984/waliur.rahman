@@ -29,6 +29,7 @@ button:hover{ transform:translateY(-1px); }
 button:active{ transform:translateY(0) scale(.985); }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible{ outline:3px solid rgba(59,130,246,.45); outline-offset:2px; }
 .wrap{ max-width:56rem; margin:0 auto; padding-bottom:5rem; }
+.wrap::before{ content:""; display:block; height:6px; border-radius:9999px; background:linear-gradient(90deg,#2563eb,#06b6d4,#16a34a,#f97316); margin:12px 0 14px; }
 .wrap > * + *{ margin-top:1.5rem; }
 @media(min-width:768px){ .wrap > * + *{ margin-top:1.75rem; } }
 .panel{
@@ -39,9 +40,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media(min-width:768px){ .panel{ padding:28px; } }
 .blue-panel{ background:linear-gradient(165deg,#ffffff,rgba(239,246,255,.95)); border-color:rgba(59,130,246,.22); box-shadow:0 22px 44px -16px rgba(37,99,235,.24), 0 10px 20px -10px rgba(15,23,42,.14), 0 3px 8px rgba(15,23,42,.07), inset 0 1px 0 #fff; }
 .site-header{ display:flex; justify-content:space-between; align-items:center; gap:16px; background:linear-gradient(120deg,#ffffff,rgba(248,250,252,.98) 55%,rgba(239,246,255,.96)); }
-.site-header h1{ margin:0; font-size:30px; line-height:1.15; font-weight:800; letter-spacing:-.02em; }
-@media(min-width:768px){ .site-header h1{ font-size:36px; } }
+.site-header h1{ margin:0; font-size:34px; line-height:1.15; font-weight:800; letter-spacing:-.02em; }
+@media(min-width:768px){ .site-header h1{ font-size:42px; } }
 .site-header h1 .accent{ color:var(--blue); }
+.live-pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:9999px; font-size:12.5px; font-weight:800; letter-spacing:.06em; color:#14532d; background:#dcfce7; border:1px solid #86efac; white-space:nowrap; }
 .dept-pill{ display:inline-block; margin-top:10px; padding:4px 12px; border-radius:9999px; font-size:13px; font-weight:700; background:linear-gradient(180deg,#eff6ff,#dbeafe); border:1px solid rgba(59,130,246,.18); color:#1e40af; box-shadow:0 4px 12px -6px rgba(37,99,235,.25), inset 0 1px 0 #fff; }
 .btn{ border:0; font-weight:700; border-radius:12px; padding:10px 16px; font-size:15px; flex-shrink:0; }
 .btn-admin{ background:#fff; color:var(--red); border:1px solid #fee2e2; box-shadow:0 8px 20px -10px rgba(15,23,42,.25); }
@@ -72,7 +74,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow:0 14px 28px -12px rgba(15,23,42,.20), 0 5px 12px -4px rgba(15,23,42,.10), 0 1px 3px rgba(15,23,42,.06), inset 0 1px 0 #fff;
   width:100%; max-width:100%;
 }
-.notice-card{ padding:14px 16px; transition:box-shadow .25s ease, transform .25s ease, border-color .25s ease; }
+.notice-card{ padding:14px 16px; border-left:4px solid var(--blue); transition:box-shadow .25s ease, transform .25s ease, border-color .25s ease; }
 @media(min-width:768px){ .notice-card{ padding:16px 20px; } }
 .notice-card:hover{ transform:translateY(-2px); border-color:rgba(59,130,246,.28); box-shadow:0 20px 36px -14px rgba(15,23,42,.24), 0 8px 16px -6px rgba(15,23,42,.12), inset 0 1px 0 #fff; }
 .notice-card p{ margin:0; font-size:15.5px; line-height:1.65; }
@@ -243,6 +245,7 @@ textarea.admin-input{ resize:vertical; }
         <h1>Notice <span class="accent">Board</span></h1>
         <span class="dept-pill">Department of mechanical</span>
       </div>
+      <span class="live-pill"><span class="live-dot"></span>LIVE</span>
     </div>
     <div class="panel blue-panel">
       <h2 class="section-title" style="color:#1d4ed8"><span class="icon-box icon-blue"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zm-7 8.32V16c0 1.66 3.13 3 7 3s7-1.34 7-3v-4.68l-7 3.82-7-3.82z"/></svg></span>Class Routine</h2>
@@ -490,9 +493,8 @@ function countdownLabel(days){
 function countdownClass(days){
   if (days === null) return "countdown-badge countdown-normal";
   if (days === 0) return "countdown-badge countdown-today";
-  if (days > 0 && days <= 2) return "countdown-badge countdown-soon";
-  if (days < 0) return "countdown-badge countdown-past";
-  return "countdown-badge countdown-normal";
+  if (days > 0) return "countdown-badge countdown-soon"; /* any countdown day: orange */
+  return "countdown-badge countdown-past";
 }
 /* Exam day ends at class-end time: on the exam day itself, once 12:35
    Dhaka time passes, the exam auto-expires (no more green 0D). */
@@ -918,6 +920,10 @@ function renderHeader(){
   left.appendChild(h1);
   left.appendChild(el("span", "dept-pill", "Department of mechanical"));
   head.appendChild(left);
+  var live = el("span", "live-pill");
+  live.appendChild(el("span", "live-dot"));
+  live.appendChild(document.createTextNode("LIVE"));
+  head.appendChild(live);
   /* No visible Admin button: the login is hidden from the public board.
      Only the owner can open it — tap the "Develop by waliur" footer
      credit 5 times quickly, or open the page with ?admin at the end of
@@ -1084,7 +1090,7 @@ function renderExams(){
     var head = el("button", "exam-head");
     head.type = "button";
     head.setAttribute("aria-expanded", open ? "true" : "false");
-    var dot = el("span", isToday ? "today-dot" : (days !== null && days > 0 && days <= 2 ? "soon-dot" : "normal-dot"));
+    var dot = el("span", isToday ? "today-dot" : (days !== null && days > 0 ? "soon-dot" : "normal-dot")); /* countdown: orange light; today: green; expired: grey */
     if (isToday) dot.setAttribute("aria-label", "Exam today");
     head.appendChild(dot);
     var subj = el("span", "subject wrap-text");
